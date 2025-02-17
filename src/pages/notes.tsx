@@ -154,8 +154,7 @@ export default function NotesPage() {
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredNotes.map((note) => (
-           <Link to={`/notes/${note.id}`}> <NoteCard
-           key={note.id}
+           <Link to={`/notes/${note.id}`}      key={note.id}> <NoteCard
            id={note.id}
            topic={note.topic}
            preacherName={note.preacherName}

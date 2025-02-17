@@ -1,10 +1,10 @@
 import Header from "@/components/header";
 import { useState } from "react";
-import { useParams } from "react-router";
+import { Navigate, useNavigate, useParams } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Trash2, Save, Edit, CalendarIcon } from "lucide-react";
+import { Trash2, Save, Edit, CalendarIcon,ArrowLeft } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
@@ -31,42 +31,46 @@ export default function Note() {
     // Logique pour supprimer la note
     alert("Note deleted!");
   };
-
+  const navigate  = useNavigate()
   return (
-    <div className="min-h-screen bg-red-50 text-red-700 ">
+    <div className="flex flex-col min-h-screen bg-red-50 text-red-700">
       <Header />
-      <div className="container mx-auto px-4 py-8" onClick={() => setMode("edit")}>
+      <ArrowLeft className="font-bold ml-2 h-6 w-6 text-gray-600 hover:text-blue-500 transition-transform transform hover:scale-125 cursor-pointer" onClick={() => {
+        navigate(-1)
+      }
+      } />
+      <div className="flex flex-1 px-4 flex-col py-4" onClick={() => setMode("edit")}>
         {/* En-tête de la note */}
-        <div className=" dark:bg-gray-800 p-6 ">
-          <div className="flex justify-between items-start">
+        <div className="dark:bg-gray-800 w-full">
+          <div className="justify-between items-start">
             <div>
-            {mode === "view" ? (
+              {mode === "view" ? (
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Sermon from {new Date(date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
                 </p>
               ) : (
                 <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-[240px] justify-start text-left font-normal",
-                      !date && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon />
-                    {date ? format(date, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-[240px] justify-start text-left font-normal",
+                        !date && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon />
+                      {date ? format(date, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={setDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               )}
               {mode === "view" ? (
                 <h1 className="text-3xl font-bold mt-2 text-gray-900 dark:text-gray-100">{topic}</h1>
@@ -74,7 +78,7 @@ export default function Note() {
                 <Input
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
-                  className="text-3xl font-bold mt-2 w-full bg-transparent text-gray-900 dark:text-gray-100"
+                  className="text-2xl md:text-3xl font-bold mt-2 w-full bg-transparent text-gray-900 dark:text-gray-100"
                 />
               )}
               {mode === "view" ? (
@@ -83,7 +87,7 @@ export default function Note() {
                 <Input
                   value={preacherName}
                   onChange={(e) => setPreacherName(e.target.value)}
-                  className="text-sm w-full bg-transparent text-gray-500 dark:text-gray-400 mt-1"
+                  className="text-sm  bg-transparent text-gray-500 dark:text-gray-400 mt-1"
                 />
               )}
             </div>
@@ -101,33 +105,35 @@ export default function Note() {
         </div>
 
         {/* Contenu de la note */}
-        <div className="p-6">
+        <div className="p-6  flex flex-col">
           {mode === "view" ? (
-            <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">{content}</p>
+            <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line flex-1">{content}</p>
           ) : (
             <Textarea
+              cols={12}
+              rows={14}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full h-40 bg-transparent text-gray-700 dark:text-gray-300"
+              className="w-full h-40 bg-transparent text-gray-700 dark:text-gray-300 flex-1"
             />
           )}
           {mode === "view" ? references.length > 0 && (
             <div className="mt-4 flex items-center">
               <p className="text-sm text-gray-500 dark:text-gray-400">References: <span className="underline decoration-dashed cursor-pointer">{references.join(", ")}</span></p>
             </div>
-          ):(
+          ) : (
             <Input
-  value={references.join(", ")}
-  onChange={(e) => setReferences([e.target.value])}
-  placeholder="Enter references (e.g., Hebrews 11:1-3, John 3:16-17)"
-  className="mt-4 w-full bg-transparent text-gray-500 dark:text-gray-400"
-/>
+              value={references.join(", ")}
+              onChange={(e) => setReferences([e.target.value])}
+              placeholder="Enter references (e.g., Hebrews 11:1-3, John 3:16-17)"
+              className="mt-4 w-full bg-transparent text-gray-500 dark:text-gray-400"
+            />
           )}
         </div>
 
         {/* Boutons d'action en mode édition */}
         {mode === "edit" && (
-          <div className="mt-6 flex justify-end gap-2">
+          <div className="mt-6 flex justify-end gap-2 h-full">
             <Button variant="destructive" onClick={handleDelete}>
               <Trash2 className="h-4 w-4 mr-2" />
               Delete
