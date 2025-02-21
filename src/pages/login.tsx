@@ -40,7 +40,7 @@ const loginSchema = z.object({
 export default function Register() {
   const { user,isLoading,refetch } = useAuth();
 
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const loginMutation = useMutation({
     mutationFn: async (data: z.infer<typeof loginSchema>) => {
@@ -58,6 +58,7 @@ export default function Register() {
         title: "Connected successfuly",
         variant: "success",
       });
+      refetch()
     },
     onError: (error: AxiosError) => {
       if (error.response?.status === 500) {
@@ -99,15 +100,19 @@ export default function Register() {
       });
     }
   }
+  useEffect(() => {
+    if(user && !isLoading){
+      navigate("/notes")
+    }    
+  },[]
+  )
 
   if(loginMutation.isSuccess && !isLoading){
-    refetch()
     return <Navigate to="/notes" />
   }
 
-  if(user){
-    return <Navigate to="/notes" />
-  }
+
+
 
   return (
     <div className="flex flex-col justify-center items-center min-h-screen bg-gray-100 p-4">

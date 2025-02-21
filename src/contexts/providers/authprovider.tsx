@@ -30,7 +30,11 @@ export  const AuthProvider = ({children}:{children:ReactNode}) => {
         </div>
       )
     }
-  return <AuthContext.Provider value={{user:data,isLoading,isError,error,refetch}}>
+    const logout = () => {
+      
+    }
+    
+  return <AuthContext.Provider value={{user:data,isLoading,isError,error,refetch,logout}}>
 {children}
   </AuthContext.Provider>
 }

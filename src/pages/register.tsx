@@ -84,9 +84,7 @@ export default function Register() {
         variant: "success",
         duration: 3000,
       });
-      setTimeout(() => {
-        navigate("/login");
-      }, 3000);
+      navigate("/login");
     },
     onError: (error: AxiosError) => {
       // Vérification si l'erreur a une réponse (statut HTTP)
