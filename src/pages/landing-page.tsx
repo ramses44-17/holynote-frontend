@@ -1,23 +1,18 @@
-import { Link, Navigate } from "react-router"; // Correction de l'import
+import { Link, useNavigate } from "react-router"; // Correction de l'import
 import { Button } from "@/components/ui/button";
 import { Notebook, Search } from "lucide-react";
-import { JSX } from "react";
+import { JSX, useEffect } from "react";
 import Header from "@/components/header";
-import { useAuth } from "@/contexts/authprovider";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function LandingPage() {
-  const {user,isLoading} = useAuth()
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-4 border-blue-500"></div>
-      </div>
-    )
-  }
-  if(user){
-    Navigate({to:"/notes"})
-    return
-  }
+  const { user } = useAuth();
+  const navigate = useNavigate()
+ useEffect(() => {
+    if (user) {
+      navigate("/notes");
+    }
+  }, [user, navigate]);
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#1a1a1a] via-[#2d2d2d] to-[#3a3a3a] text-white">
       <Header />
@@ -25,10 +20,12 @@ export default function LandingPage() {
         {/* Hero Section */}
         <section className="container mx-auto px-4 py-16 flex flex-col items-center text-center">
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
-            <span className="text-red-700">Remember</span> Every Sermon <span className="text-red-700">Effortlessly</span> with HolyNotes
+            <span className="text-red-700">Remember</span> Every Sermon{" "}
+            <span className="text-red-700">Effortlessly</span> with HolyNotes
           </h2>
           <p className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl px-6 md:px-3">
-            Keep your sermon notes organized, searchable, and always within reach because every message matters.
+            Keep your sermon notes organized, searchable, and always within
+            reach because every message matters.
           </p>
           <div className="space-x-4">
             <Link to="/register">
@@ -42,7 +39,9 @@ export default function LandingPage() {
         {/* Features Section */}
         <section className="bg-gray-900/50 py-16 backdrop-blur-sm">
           <div className="container mx-auto px-4">
-            <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-8 text-center">Key Features</h3>
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-8 text-center">
+              Key Features
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <FeatureCard
                 icon={<Notebook className="w-12 h-12 mb-4" />}
@@ -70,7 +69,15 @@ export default function LandingPage() {
 }
 
 // FeatureCard Component
-function FeatureCard({ icon, title, description }: { icon: JSX.Element; title: string; description: string }) {
+function FeatureCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: JSX.Element;
+  title: string;
+  description: string;
+}) {
   return (
     <div className="bg-gray-800/70 p-6 rounded-lg text-center backdrop-blur-sm">
       <div className="flex justify-center">{icon}</div>
