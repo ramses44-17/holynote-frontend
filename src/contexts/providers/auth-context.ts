@@ -13,7 +13,6 @@ interface AuthContextType {
   isError:boolean;
   error:Error | null;
   refetch:(options?: RefetchOptions) => Promise<QueryObserverResult<any, Error>>
-  logout:() => void
   
 }
 export const AuthContext = createContext<AuthContextType | null>(null)

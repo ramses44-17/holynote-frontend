@@ -1,78 +1,80 @@
 import { format } from "date-fns"
-import { Trash2, BookOpen } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { fr } from "date-fns/locale"
+import { BookOpen, Mic2, Calendar, MoreHorizontal, Trash2, Edit } from "lucide-react"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 
 interface NoteProps {
-  id: number
+  id: string
   topic: string
-  preacherName: string
+  preacher: string
   date: Date
-  color: "red" | "blue" | "violet" | "amber" | "orange"
+  color: string | "red" | "blue" | "violet" | "amber" | "orange" | "none"
   content: string
   references: string[]
-  onDelete: (id: number) => void
 }
 
-const colorClasses = {
-  red: "bg-red-50 border-red-200 text-red-700",
-  blue: "bg-blue-50 border-blue-200 text-blue-700",
-  violet: "bg-violet-50 border-violet-200 text-violet-700",
-  amber: "bg-amber-50 border-amber-200 text-amber-700",
-  orange: "bg-orange-50 border-orange-200 text-orange-700",
-}
+export default function noteCard({ id, topic, preacher, date, content, color, references }: NoteProps) {
+  const bgStyle = color === "none" ? "bg-none" : `bg-${color}-400 border-${color}-200`
 
-export default function NoteCard({ id, topic, preacherName, date, content, color, references, onDelete }: NoteProps) {
-  const handleDeleteClick = (event) => {
-    event.stopPropagation(); // Empêche la propagation de l'événement
-    event.preventDefault(); // Empêche le comportement par défaut (navigation)
-    onDelete(id); // Appelle la fonction de suppression
-  };
+  // Function to truncate references list if too long
+  const formatReferences = (refs: string[]) => {
+    const joinedRefs = refs.join(", ")
+    if (joinedRefs.length > 50) {
+      return joinedRefs.substring(0, 50) + "..."
+    }
+    return joinedRefs
+  }
+
   return (
-    <Card className={`w-full max-w-md shadow-lg border-l-4 ${colorClasses[color]}`}>
-      <CardHeader className="relative pb-2">
-        <div className="flex justify-between items-start">
-          <div>
-            <h3 className="text-lg font-semibold">{topic}</h3>
-            <p className="text-sm text-muted-foreground">{preacherName}</p>
+    <Card className={`${bgStyle} shadow-lg border-l-4`}>
+      <CardHeader>
+        <div className="flex flex-col gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="self-end cursor-pointer">
+              <MoreHorizontal className="h-6 w-6 mr-2" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <div className="text-sm font-medium text-gray-600 opacity-80 flex items-center">
+            <Calendar className="h-4 w-4 mr-2" />
+            <p>{format(date, "EEEE d MMMM yyyy", { locale: fr })}</p>
           </div>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2 text-muted-foreground hover:text-destructive"
-                  onClick={handleDeleteClick}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  <span className="sr-only">Delete note</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Delete note</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <CardTitle className="font-extrabold mt-2">{topic}</CardTitle>
+          <div className="self-end text-sm flex items-center">
+            <Mic2 className="h-4 w-4 mr-2" />
+            <p className="font-semibold">{preacher}</p>
+          </div>
         </div>
       </CardHeader>
-      <CardContent>
-          {content.length > 0 && <p className="text-sm line-clamp-6">
-          {content}
-          </p>}
-          {content.length === 0 && <p className="text-sm">
-          No content...
-          </p>}
-        {references.length === 0 && <p className="text-sm text-muted-foreground">No references</p>}
-        {references.length > 0 && (
-          <div className="mt-4 flex items-center">
-            <BookOpen className="h-4 w-4 mr-2" />
-            <p className="text-xs text-muted-foreground">{references.join(", ")}</p>
-          </div>
+      <CardContent className="p-4">
+        {content.length === 0 ? (
+          <p className="text-sm">No content...</p>
+        ) : (
+          <p className="line-clamp-3 overflow-ellipsis">{content}</p>
         )}
       </CardContent>
-      <CardFooter className="text-xs text-muted-foreground">Sermon from {format(date, "MMMM d, yyyy")}</CardFooter>
+      <CardFooter>
+        {references.length === 0 ? (
+          <p className="text-xs">No references...</p>
+        ) : (
+          <div className="flex items-center">
+            <BookOpen className="h-4 w-4 mr-2" />
+            <p className="text-xs truncate max-w-[200px]" title={references.join(", ")}>
+              {formatReferences(references)}
+            </p>
+          </div>
+        )}
+      </CardFooter>
     </Card>
   )
 }

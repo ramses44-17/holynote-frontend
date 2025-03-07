@@ -19,8 +19,8 @@ export  const AuthProvider = ({children}:{children:ReactNode}) => {
         })
         return response.data.user
       },
-      retry:false,
-        refetchOnWindowFocus: false
+        refetchOnWindowFocus: false,
+        retry:false
     })
 
     if (isLoading) {
@@ -30,11 +30,8 @@ export  const AuthProvider = ({children}:{children:ReactNode}) => {
         </div>
       )
     }
-    const logout = () => {
-      
-    }
     
-  return <AuthContext.Provider value={{user:data,isLoading,isError,error,refetch,logout}}>
+  return <AuthContext.Provider value={{user:data,isLoading,isError,error,refetch}}>
 {children}
   </AuthContext.Provider>
 }

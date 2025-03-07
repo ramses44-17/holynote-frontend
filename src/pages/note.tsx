@@ -1,74 +1,72 @@
-import Header from "@/components/header";
-import { useState } from "react";
-import { Navigate, useNavigate, useParams } from "react-router";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Trash2, Save, Edit, CalendarIcon,ArrowLeft } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import Header from "@/components/header"
+import { useState } from "react"
+import { useNavigate, useParams } from "react-router"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Trash2, Save, Edit, CalendarIcon, ArrowLeft, Youtube } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { format } from "date-fns"
+import { cn } from "@/lib/utils"
+import { YouTubeEmbed } from "@/components/youtube-embeb"
 
 export default function Note() {
-  const [mode, setMode] = useState<"view" | "edit">("view");
-  const [topic, setTopic] = useState("The Power of Faith");
-  const [preacherName, setPreacherName] = useState("Pastor John Doe");
+  const [mode, setMode] = useState<"view" | "edit">("view")
+  const [topic, setTopic] = useState("The Power of Faith")
+  const [preacherName, setPreacherName] = useState("Pastor John Doe")
   const [content, setContent] = useState(
-    "Faith is the substance of things hoped for, the evidence of things not seen. It is through faith that we understand that the universe was formed at God's command, so that what is seen was not made out of what was visible."
-  );
-  const [references, setReferences] = useState(["Hebrews 11:1", "Hebrews 11:3"]);
-  const [date, setDate] = useState(new Date("2023-06-15"));
+    "Faith is the substance of things hoped for, the evidence of things not seen. It is through faith that we understand that the universe was formed at God's command, so that what is seen was not made out of what was visible.",
+  )
+  const [references, setReferences] = useState(["Hebrews 11:1", "Hebrews 11:3"])
+  const [date, setDate] = useState<Date | undefined>(new Date("2023-06-15"))
+  const [videoUrl, setVideoUrl] = useState("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+  const [isEditingVideo, setIsEditingVideo] = useState(false)
 
-  const noteId = useParams().noteId;
+  const noteId = useParams().noteId
+  const navigate = useNavigate()
 
   const handleSave = () => {
-    // Logique pour sauvegarder les modifications
-    setMode("view");
-  };
+    // Logic to save changes
+    setMode("view")
+    setIsEditingVideo(false)
+  }
 
   const handleDelete = () => {
-    // Logique pour supprimer la note
-    alert("Note deleted!");
-  };
-  const navigate  = useNavigate()
+    // Logic to delete the note
+    alert("Note deleted!")
+  }
+
   return (
-    <div className="flex flex-col min-h-screen bg-red-50 text-red-700">
-      <Header />
-      <ArrowLeft className="font-bold ml-2 h-6 w-6 text-gray-600 hover:text-blue-500 transition-transform transform hover:scale-125 cursor-pointer" onClick={() => {
-        navigate(-1)
-      }
-      } />
-      <div className="flex flex-1 px-4 flex-col py-4" onClick={() => setMode("edit")}>
-        {/* En-tête de la note */}
-        <div className="dark:bg-gray-800 w-full">
-          <div className="justify-between items-start">
-            <div>
+    <div className="flex flex-col min-h-screen">
+      <button
+        className="flex items-center font-bold ml-4 mt-4 text-gray-600 hover:text-blue-500 transition-all duration-200 ease-in-out"
+        onClick={() => navigate(-1)}
+      >
+        <ArrowLeft className="h-5 w-5 mr-2" />
+        Back
+      </button>
+      <div className="flex flex-1 px-4 flex-col py-4 max-w-4xl mx-auto w-full">
+        <div className="bg-white  p-6 mb-6">
+          <div className="flex justify-between items-start mb-4">
+            <div className="flex-grow">
               {mode === "view" ? (
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Sermon from {new Date(date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+                  Sermon from {date ? format(date, "PPP") : "Unknown date"}
                 </p>
               ) : (
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant={"outline"}
-                      className={cn(
-                        "w-[240px] justify-start text-left font-normal",
-                        !date && "text-muted-foreground"
-                      )}
+                      className={cn("w-[240px] justify-start text-left font-normal", !date && "text-muted-foreground")}
                     >
-                      <CalendarIcon />
+                      <CalendarIcon className="mr-2 h-4 w-4" />
                       {date ? format(date, "PPP") : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={setDate}
-                      initialFocus
-                    />
+                    <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
                   </PopoverContent>
                 </Popover>
               )}
@@ -87,7 +85,7 @@ export default function Note() {
                 <Input
                   value={preacherName}
                   onChange={(e) => setPreacherName(e.target.value)}
-                  className="text-sm  bg-transparent text-gray-500 dark:text-gray-400 mt-1"
+                  className="text-sm bg-transparent text-gray-500 dark:text-gray-400 mt-1"
                 />
               )}
             </div>
@@ -102,42 +100,62 @@ export default function Note() {
               </Button>
             )}
           </div>
-        </div>
 
-        {/* Contenu de la note */}
-        <div className="p-6  flex flex-col">
+          <YouTubeEmbed
+            url={videoUrl}
+            onEdit={() => setIsEditingVideo(true)}
+            isEditing={isEditingVideo || mode === "edit"}
+          />
+
+          {(isEditingVideo || mode === "edit") && (
+            <div className="flex items-center mb-4">
+              <Youtube className="h-5 w-5 mr-2 text-red-500" />
+              <Input
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                placeholder="Enter YouTube video URL"
+                className="flex-grow bg-transparent text-gray-700 dark:text-gray-300"
+              />
+            </div>
+          )}
+
           {mode === "view" ? (
-            <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line flex-1">{content}</p>
+            <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line mb-4">{content}</p>
           ) : (
             <Textarea
-              cols={12}
-              rows={14}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full h-40 bg-transparent text-gray-700 dark:text-gray-300 flex-1"
+              className="w-full min-h-[200px] bg-transparent text-gray-700 dark:text-gray-300 mb-4"
             />
           )}
-          {mode === "view" ? references.length > 0 && (
-            <div className="mt-4 flex items-center">
-              <p className="text-sm text-gray-500 dark:text-gray-400">References: <span className="underline decoration-dashed cursor-pointer">{references.join(", ")}</span></p>
-            </div>
+
+          {mode === "view" ? (
+            references.length > 0 && (
+              <div className="mt-4 flex items-center">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  References:{" "}
+                  <span className="underline decoration-dashed cursor-pointer">{references.join(", ")}</span>
+                </p>
+              </div>
+            )
           ) : (
             <Input
               value={references.join(", ")}
-              onChange={(e) => setReferences([e.target.value])}
+              onChange={(e) => setReferences(e.target.value.split(", "))}
               placeholder="Enter references (e.g., Hebrews 11:1-3, John 3:16-17)"
               className="mt-4 w-full bg-transparent text-gray-500 dark:text-gray-400"
             />
           )}
         </div>
 
-        {/* Boutons d'action en mode édition */}
-        {mode === "edit" && (
-          <div className="mt-6 flex justify-end gap-2 h-full">
-            <Button variant="destructive" onClick={handleDelete}>
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete
-            </Button>
+        {(mode === "edit" || isEditingVideo) && (
+          <div className="flex justify-end gap-2">
+            {mode === "edit" && (
+              <Button variant="destructive" onClick={handleDelete}>
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </Button>
+            )}
             <Button onClick={handleSave}>
               <Save className="h-4 w-4 mr-2" />
               Save Changes
@@ -146,5 +164,6 @@ export default function Note() {
         )}
       </div>
     </div>
-  );
+  )
 }
+

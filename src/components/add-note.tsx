@@ -2,13 +2,9 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,36 +16,37 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 
-// Fonction de validation pour une référence biblique
-const validateReference = (ref: string) => {
-  // Regex pour valider le format "nomdulivre chapitre:verset"
-  const referenceRegex = /^[a-zA-Z]+\s\d+:\d+$/;
-  return referenceRegex.test(ref.trim());
-};
 
-// Schéma Zod pour les références
-const referencesSchema = z.string().refine(
-  (value) => {
-    // Sépare les références par des virgules
-    const references = value.split(",");
-    // Vérifie que chaque référence est valide
-    return references.every((ref) => validateReference(ref));
-  },
-  {
-    message: "Les références doivent être au format 'nomdulivre chapitre:verset', séparées par des virgules.",
-  }
-);
 
 // Schéma Zod pour la note
-const NoteSchema = z.object({
-  topic: z.string().min(1, "Le sujet est requis"),
-  preacherName: z.string().min(1, "Le nom du prédicateur est requis"),
-  date: z.date({ required_error: "La date est requise" }),
-  color: z.enum(["red", "blue", "violet", "amber", "orange"]),
-  references: referencesSchema, // Utilise le schéma personnalisé pour les références
-});
+const youtubeUrlRegex = /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+const noteSchema = z.object({
+  topic: z.string({
+    message:"topic is required"
+  }).min(1, "topic is required").max(60, "topic must be no longer than 60 characters"),
+  content: z.string().optional(), // Peut être une chaîne vide
+  color: z.string().max(10).default("red"),
+  references: z.string().regex(/^([a-zA-Z]+\s\d{1,3}(:\d{1,3}(-\d{1,3})?)?,?\s?)+$/,{
+    message:"invalid references format"
+  }).optional(),
+  youtubeUrl: z.string().url("invalid youtube url").regex(youtubeUrlRegex, "invalid youtube url").optional(),
+  preacher: z.string({
+    message:"preacher name is required"
+  }).min(1, "preacher is required").max(60, "The preacher's name must not exceed 60 characters."),
+  date: z
+  .string({
+    required_error: "Date is required",
+  })
+  .refine(
+    (val) => {
+      return !isNaN(Date.parse(val))
+    },
+    {
+      message: "Invalid date format, please provide date in YYYY-MM-DD",
+    },
+  )
+})
 
-// Couleurs disponibles avec leurs codes hexadécimaux
 const colorOptions = [
   { value: "red", label: "Rouge", color: "#ef4444" },
   { value: "blue", label: "Bleu", color: "#3b82f6" },
@@ -59,18 +56,19 @@ const colorOptions = [
 ];
 
 export default function AddNote() {
-  const form = useForm<z.infer<typeof NoteSchema>>({
-    resolver: zodResolver(NoteSchema),
+  const form = useForm<z.infer<typeof noteSchema>>({
+    resolver: zodResolver(noteSchema),
     defaultValues: {
       topic: "",
-      preacherName: "",
+      preacher: "",
       color: "red",
-      date: new Date(),
+      date: "",
       references: "",
+      youtubeUrl:undefined
     },
   });
 
-  function onSubmit(values: z.infer<typeof NoteSchema>) {
+  function onSubmit(values: z.infer<typeof noteSchema>) {
     console.log(values);
   }
 
@@ -84,7 +82,7 @@ export default function AddNote() {
       </DialogTrigger>
       <DialogContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
             {/* Champ : Sujet */}
             <FormField
               control={form.control}
@@ -93,7 +91,7 @@ export default function AddNote() {
                 <FormItem>
                   <FormLabel>Topic</FormLabel>
                   <FormControl>
-                    <Input placeholder="Entrez le sujet" {...field} />
+                    <Input placeholder="Enter topic" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -103,12 +101,12 @@ export default function AddNote() {
             {/* Champ : Nom du prédicateur */}
             <FormField
               control={form.control}
-              name="preacherName"
+              name="preacher"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Preacher</FormLabel>
                   <FormControl>
-                    <Input placeholder="Entrez le nom du prédicateur" {...field} />
+                    <Input placeholder="Enter preacher's name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -117,36 +115,39 @@ export default function AddNote() {
 
             {/* Champ : Date */}
             <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Date</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start text-left font-normal"
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {field.value ? format(field.value, "PPP") : <span>Choisissez une date</span>}
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          control={form.control}
+          name="date"
+          render={({ field }) => (
+            <FormItem className="flex flex-col w-full">
+              <FormLabel>Date</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={`w-[240px] justify-start text-left font-normal ${
+                        !field.value && "text-muted-foreground"
+                      }`}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {field.value ? format(new Date(field.value), "PPP") : <span>Choose a date</span>}
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value ? new Date(field.value) : undefined}
+                    onSelect={(date) => field.onChange(date?.toISOString())}
+                    disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
             {/* Champ : Couleur */}
             <FormField
@@ -158,7 +159,7 @@ export default function AddNote() {
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Choisissez une couleur" />
+                        <SelectValue placeholder="Choose colors" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -186,10 +187,10 @@ export default function AddNote() {
               name="references"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Références Bibliques</FormLabel>
+                  <FormLabel>Biblic references</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Entrez les références (ex: Jean 3:16, Luc 1:13)"
+                      placeholder="Enter YouTube URL"
                       {...field}
                     />
                   </FormControl>
@@ -197,10 +198,25 @@ export default function AddNote() {
                 </FormItem>
               )}
             />
-
+             <FormField
+              control={form.control}
+              name="youtubeUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Sermon youtube link</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter biblic references (ex: Jean 3:16, Luc 1:13)"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             {/* Bouton de soumission */}
             <Button type="submit" className="w-full">
-              Initialize note
+              Initialize
             </Button>
           </form>
         </Form>
