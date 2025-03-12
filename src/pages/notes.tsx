@@ -1,151 +1,173 @@
-import { useState } from "react"
+import { Dispatch, SetStateAction, useState } from "react"
 import Header, { Mode } from "@/components/header"
 import NoteCard from "@/components/note-card"
-import {  Plus } from "lucide-react"
+import {  Plus, SearchIcon } from "lucide-react"
 import { Link } from "react-router"
+import AddNoteModal from "@/components/add-note"
+import axios from "axios"
+import { useQuery } from "@tanstack/react-query"
 
-const mockNotes = [
-  {
-    id: "1",
-    topic: "The Power of Faith",
-    preacher: "Pastor John Doe",
-    date: new Date("2023-06-15"),
-    color: "blue",
-    content:
-      "Faith is the substance of things hoped for, the evidence of things not seen. It is through faith that we understand that the universe was formed at God's command, so that what is seen was not made out of what was visible.",
-    references: ["Hebrews 11:1", "Hebrews 11:3"],
-  },
-  {
-    id: "2",
-    topic: "Love Your Neighbor",
-    preacher: "Pastor Jane Smith",
-    date: new Date("2023-06-22"),
-    color: "red",
-    content:
-      'Jesus said, "Love your neighbor as yourself." This commandment is the second greatest, only after loving God with all your heart, soul, and mind. It encompasses how we should treat others with kindness, compassion, and respect.',
-    references: ["Matthew 22:39", "Mark 12:31"],
-  },
-  {
-    id: "3",
-    topic: "The Grace of God",
-    preacher: "Pastor Michael Brown",
-    date: new Date("2023-06-29"),
-    color: "amber",
-    content: "",
-    references: ["Ephesians 2:8-9", "Romans 3:24"],
-  },
-  {
-    id: 4,
-    topic: "The Importance of Prayer",
-    preacher: "Pastor Sarah Johnson",
-    date: new Date("2023-07-06"),
-    color: "violet",
-    content:
-      "Prayer is our direct line of communication with God. It is through prayer that we express our gratitude, seek guidance, and intercede for others. A consistent prayer life strengthens our relationship with God.",
-    references: ["Matthew 6:14-15", "Colossians 3:13, Jean 3:16"],
-  },
-  {
-    id: "5",
-    topic: "Walking in Obedience",
-    preacher: "Pastor David Wilson",
-    date: new Date("2025-03-05"),
-    color: "amber",
-    content:
-      "Obedience to God's Word is a sign of our love for Him. When we walk in obedience, we align ourselves with His will and experience His blessings in our lives.",
-    references: ["John 14:15", "Deuteronomy 28:1-2"],
-  },
-  {
-    id: "6",
-    topic: "The Fruit of the Spirit",
-    preacher: "Pastor Emily Davis",
-    date: new Date("2023-07-20"),
-    color: "none",
-    content: "",
-    references: ["Galatians 5:22-23"],
-  },
-  {
-    id: "7",
-    topic: "Trusting God in Difficult Times",
-    preacher: "Pastor Mark Taylor",
-    date: new Date("2023-07-27"),
-    color: "red",
-    content:
-      "In times of trouble, we must lean on God's promises and trust that He is working all things for our good. His plans for us are always perfect, even when we cannot see the bigger picture.",
-    references: ["Romans 8:28", "Proverbs 3:5-6"],
-  },
-  {
-    id: "8",
-    topic: "The Hope of Eternal Life",
-    preacher: "Pastor Laura Adams",
-    date: new Date("2023-08-03"),
-    color: "none",
-    content: "",
-    references: ["Matthew 6:14-15", "Colossians 3:13"],
-  },
-  {
-    id: "9",
-    topic: "Living a Life of Gratitude",
-    preacher: "Pastor Daniel Lee",
-    date: new Date("2023-08-10"),
-    color: "red",
-    content:
-      "Gratitude shifts our focus from what we lack to the abundance of blessings we have received. A grateful heart is a joyful heart, and it honors God in every circumstance.",
-    references: ["1 Thessalonians 5:18", "Psalm 107:1"],
-  },
-  {
-    id: "10",
-    topic: "The Power of Forgiveness",
-    preacher: "Pastor Rachel Green",
-    date: new Date("2023-08-17"),
-    color: "red",
-    content: "",
-    references: ["Matthew 6:14-15", "Colossians 3:13"],
-  },
-]
 
+
+const fetchNotes = async () => {
+  const response = await axios.get("https://localhost:3000/api/notes",{
+    withCredentials:true
+  }); 
+  return response.data.notes;
+}
+
+
+//regler les problemes de type
+//améliorer le modal pour ajouter une note
+// teste la route d'ajout des notes
+// tester la route de suppression des notes
+
+
+
+//refactorsiser le context pour utiliser zustand
+
+function NewNoteCard({ setOpen}:{
+  setOpen:Dispatch<SetStateAction<boolean>>
+}) {
+  return (
+    <div className="relative flex flex-col h-full rounded-xl overflow-hidden border border-dashed border-primary/50 bg-card/50 shadow-sm transition-all duration-300 hover:shadow-md hover:translate-y-[-2px] hover:border-primary group cursor-pointer" onClick={() => setOpen(true)}>
+      <div className="flex flex-col h-full p-5 justify-center items-center">
+        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors duration-300">
+          <Plus className="h-6 w-6 text-primary" />
+        </div>
+        <h3 className="text-lg font-semibold text-primary">New note</h3>
+        <p className="text-sm text-muted-foreground mt-1 text-center">Create a new sermon note</p>
+      </div>
+      <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+    </div>
+  )
+}
 
 
 export default function NotesPage() {
 
-const [mode,setMode] = useState<Mode>('view')
+const [isOpen,setIsOpen]  = useState(false)
 
-//en mode search la header devient une seachbar, la balise main affiche rien si aucun terme n'est entré il reste vide avec une indication sinon  il affiche les notes qui contiennent la search term
+const [mode,setMode] = useState<Mode>('view')
+const [searchTerm,setSearchTerm] = useState<string>("")
+const [filterBy,setFilterBy] = useState<string>("all")
+const { data: notes, isLoading, isError } = useQuery({
+  queryKey: ["notes"], 
+  queryFn:fetchNotes
+});
+
+if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error loading notes</div>;
+ const fileredNote = notes.filter((note) => {
+  if(filterBy === "all" && searchTerm){
+    return note.topic.toLowerCase().includes(searchTerm.toLowerCase()) || note.preacher.toLowerCase().includes(searchTerm.toLowerCase()) || note.content.toLowerCase().includes(searchTerm.toLowerCase()) || note.references.join(" ").toLowerCase().includes(searchTerm.toLowerCase())
+  }
+  if(filterBy === "last-week"){
+    const lastWeek = new Date()
+    lastWeek.setDate(lastWeek.getDate() - 7)
+    return note.date >= lastWeek
+  }
+  if(filterBy === "last-months"){
+    const last3Months = new Date()
+    last3Months.setMonth(last3Months.getMonth() - 3)
+    return note.date >= last3Months
+  }
+ })
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
-      <Header mode={mode} setMode={setMode} />
-      {
-        mode === "view" ? (
-          <main className="container mx-auto px-4 py-8">
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex justify-center items-center border rounded-lg p-10 bg-blue-400 cursor-pointer">
-            <div className="border border-dashed p-4 border-blue-600 flex flex-col justify-center items-center cursor-pointer">
-              <Plus />
-              New note
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <Header filterBy={filterBy} searchTerm={searchTerm} setFilterBy={setFilterBy} setSearchTerm={setSearchTerm} mode={mode} setMode={setMode} />
+      <div className="container mx-auto px-4 py-8 flex-grow">
+        {
+          mode === "view" ? (
+            <>
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-foreground">Sermon Notes</h1>
             </div>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">My notes</h1>
-        </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {mockNotes.map((note) => (
-           <Link to={`/notes/${note.id}`}      key={note.id}> <NoteCard
-           id={note.id.toString()}
-           topic={note.topic}
-           preacher={note.preacher}
-           date={note.date}
-           color={note.color}
-           content={note.content}
-           references={note.references}
-         /></Link>
-          ))}
-        </div>
-      </main>
-        ):(
-          <div>
-
-          </div>
-        )
-      }
+            {
+              notes.length > 0 ?(
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  <NewNoteCard setOpen={setIsOpen}
+                      />
+                  {notes.map((note) => (
+                    <Link
+                      to={`/notes/${note.id}`}
+                      key={note.id}
+                      className="block h-full transition-opacity hover:opacity-95"
+                    >
+                      <NoteCard
+                        id={note.id.toString()}
+                        topic={note.topic}
+                        preacher={note.preacher}
+                        date={note.date}
+                        color={note.color}
+                        content={note.content}
+                        references={note.references}
+                        youtubeId={note.youtubeId}
+                      />
+                    </Link>
+                  ))}
+                </div>
+              ):(
+                <div className="flex items-center justify-center py-16">
+                  <NewNoteCard setOpen={setIsOpen}/>
+                  </div>
+              )
+            }
+            </>
+          ):
+          (
+            <div>
+              {
+                !searchTerm && filterBy === "all" && (
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="flex flex-col items-center gap-4">
+                    <SearchIcon/>
+                    <h1 className="text-3xl font-bold text-foreground">
+                      Enter a search term to find notes
+                    </h1>
+                    </div>
+                  </div>
+                )
+              }
+              {
+                (searchTerm && fileredNote.length > 0) || (!searchTerm && fileredNote.length > 0) && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {fileredNote.map((note) => (
+                      <Link
+                        to={`/notes/${note.id}`}
+                        key={note.id}
+                        className="block h-full transition-opacity hover:opacity-95"
+                      >
+                        <NoteCard
+                          id={note.id.toString()}
+                          topic={note.topic}
+                          preacher={note.preacher}
+                          date={note.date}
+                          color={note.color}
+                          content={note.content}
+                          references={note.references}
+                          youtubeId={note.youtubeId}
+                        />
+                      </Link>
+                    ))}
+                  </div>
+                )
+              }
+              {
+                searchTerm && (fileredNote.length === 0 && filterBy !== "all") && (
+                  <div className="flex items-center justify-center py-16">
+                    <h1 className="text-3xl font-bold text-foreground">
+                      No notes found
+                    </h1>
+                  </div>
+                )
+              }
+            </div>
+          )
+        }
+      </div>
+      <AddNoteModal setOpen={setIsOpen} open={isOpen}/>
     </div>
   )
 }

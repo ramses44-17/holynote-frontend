@@ -1,11 +1,11 @@
 import {Link} from "react-router"
 import { Button } from "@/components/ui/button"
-import { Pen, LogOut, Search, Settings, X } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
+import { Pen, LogOut, Search, Settings } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Dispatch, SetStateAction } from "react"
 import SearchBar from "./search-bar"
+import { useAuth } from "@/hooks/use-auth"
 
 
 export type Mode = "view" | "search"
@@ -13,14 +13,14 @@ export type Mode = "view" | "search"
 interface HeaderProps {
   mode:Mode;
   setMode:Dispatch<SetStateAction<Mode>>
+  searchTerm:string
+  setSearchTerm:Dispatch<SetStateAction<string>>
+  filterBy:string
+  setFilterBy:Dispatch<SetStateAction<string>>
 }
-export default function Header({mode,setMode}:HeaderProps) {
-  // const { user } = useAuth()
+export default function Header({mode,setMode,searchTerm,setFilterBy,setSearchTerm,filterBy}:HeaderProps) {
+  const { user } = useAuth()
   
-  const user  = {
-    username:"amos"
-  }
-
   return mode === "view" ? (
     <header className="p-4 flex justify-between items-center border-b bg-white text-black">
       <Link to="/" className="flex items-center">
@@ -29,22 +29,6 @@ export default function Header({mode,setMode}:HeaderProps) {
           Holy<span className="bg-red-500 text-white px-1 rounded-r-sm">Notes</span>
         </h1>
       </Link>
-      {!user && (
-        <nav className="space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            asChild
-            className="border border-blue-700 text-blue-700 bg-none font-bold hover:bg-none"
-          >
-            <Link to="/login">Login</Link>
-          </Button>
-          <Button variant="default" size="sm" className="bg-blue-700 hover:bg-blue-600 text-white font-bold" asChild>
-            <Link to="/register">Sign Up</Link>
-          </Button>
-        </nav>
-      )}
-      {user && (
         <div className="flex items-center gap-2">
           <Button variant="outline"
           className="shadow-none border-none cursor-pointer"
@@ -57,7 +41,7 @@ export default function Header({mode,setMode}:HeaderProps) {
           <DropdownMenuTrigger asChild>
             <Avatar className="cursor-pointer">
               <AvatarFallback className="bg-blue-500 text-white font-semibold text-lg uppercase">
-                {user.username[0]}
+                {user && user.username[0]}
               </AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
@@ -73,11 +57,9 @@ export default function Header({mode,setMode}:HeaderProps) {
           </DropdownMenuContent>
         </DropdownMenu>
         </div>
-      )}
     </header>
   ) : (
-    <SearchBar setMode={setMode}/>
+    <SearchBar filterBy={filterBy} setFilterBy={setFilterBy} searchTerm={searchTerm} setMode={setMode} setSearchTerm={setSearchTerm} />
   )
-  
 }
 

@@ -53,7 +53,7 @@ const registerSchema = z
   });
 
 export default function Register() {
-  const { user, isLoading } = useAuth();
+  const {  isLoading,user } = useAuth();
   const navigate = useNavigate();
   const registerForm = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -70,7 +70,7 @@ export default function Register() {
   const registerMutation = useMutation({
     mutationFn: async (data: z.infer<typeof registerSchema>) => {
       const response = await axios.post(
-        "http://localhost:3000/api/users/register",
+        "https://localhost:3000/api/users/register",
         data
       );
       return response.data;
@@ -157,10 +157,10 @@ export default function Register() {
   }
 
   useEffect(() => {
-    if (user) {
+    if (user && !isLoading) {
       navigate("/notes");
     }
-  }, [user, isLoading, navigate]);
+  }, []);
   return (
     <div className="flex flex-col justify-center items-center min-h-screen bg-gray-100 p-4">
       <Card className="w-full max-w-md border-none shadow-none">

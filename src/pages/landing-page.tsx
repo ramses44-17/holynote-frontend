@@ -2,7 +2,6 @@ import { Link, useNavigate } from "react-router"; // Correction de l'import
 import { Button } from "@/components/ui/button";
 import { Notebook, Search } from "lucide-react";
 import { JSX, useEffect } from "react";
-import Header from "@/components/header";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function LandingPage() {
@@ -15,7 +14,7 @@ export default function LandingPage() {
   }, [user, navigate]);
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#1a1a1a] via-[#2d2d2d] to-[#3a3a3a] text-white">
-      <Header />
+      
       <main className="flex-grow">
         {/* Hero Section */}
         <section className="container mx-auto px-4 py-16 flex flex-col items-center text-center">

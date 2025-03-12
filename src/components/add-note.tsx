@@ -2,10 +2,8 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -15,6 +13,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
+import { Dispatch, SetStateAction } from "react";
 
 
 
@@ -51,11 +50,16 @@ const colorOptions = [
   { value: "red", label: "Rouge", color: "#ef4444" },
   { value: "blue", label: "Bleu", color: "#3b82f6" },
   { value: "violet", label: "Violet", color: "#8b5cf6" },
-  { value: "amber", label: "Ambre", color: "#f59e0b" },
   { value: "orange", label: "Orange", color: "#f97316" },
 ];
 
-export default function AddNote() {
+
+interface AddNoteModalProps {
+  open:boolean
+  setOpen:Dispatch<SetStateAction<boolean>>
+}
+
+export default function AddNoteModal({open,setOpen}:AddNoteModalProps) {
   const form = useForm<z.infer<typeof noteSchema>>({
     resolver: zodResolver(noteSchema),
     defaultValues: {
@@ -73,13 +77,7 @@ export default function AddNote() {
   }
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Add Note
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
@@ -190,7 +188,7 @@ export default function AddNote() {
                   <FormLabel>Biblic references</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter YouTube URL"
+                      placeholder="Enter biblic references (ex: Jean 3:16, Luc 1:13)"
                       {...field}
                     />
                   </FormControl>
@@ -206,7 +204,7 @@ export default function AddNote() {
                   <FormLabel>Sermon youtube link</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter biblic references (ex: Jean 3:16, Luc 1:13)"
+                      placeholder="Enter YouTube URL"
                       {...field}
                     />
                   </FormControl>
@@ -216,7 +214,7 @@ export default function AddNote() {
             />
             {/* Bouton de soumission */}
             <Button type="submit" className="w-full">
-              Initialize
+              Initialize note
             </Button>
           </form>
         </Form>

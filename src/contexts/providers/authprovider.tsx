@@ -14,7 +14,7 @@ export  const AuthProvider = ({children}:{children:ReactNode}) => {
     const { data, isLoading, isError, error,refetch} = useQuery({
       queryKey:["me"],
       queryFn:async() => {
-        const response = await axios.get("http://localhost:3000/api/users/me",{
+        const response = await axios.get("https://localhost:3000/api/users/me",{
           withCredentials:true
         })
         return response.data.user

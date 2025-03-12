@@ -38,14 +38,13 @@ const loginSchema = z.object({
 });
 
 export default function Register() {
-  const { user,isLoading,refetch } = useAuth();
-
+  const { isLoading,refetch,user } = useAuth();
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const loginMutation = useMutation({
     mutationFn: async (data: z.infer<typeof loginSchema>) => {
       const response = await axios.post(
-        "http://localhost:3000/api/users/login",
+        "https://localhost:3000/api/users/login",
         data,
         {
           withCredentials: true,

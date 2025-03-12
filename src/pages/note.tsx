@@ -12,6 +12,9 @@ import { cn } from "@/lib/utils"
 import { YouTubeEmbed } from "@/components/youtube-embeb"
 
 export default function Note() {
+
+  //ajouter une validation
+  //améliorer le style
   const [mode, setMode] = useState<"view" | "edit">("view")
   const [topic, setTopic] = useState("The Power of Faith")
   const [preacherName, setPreacherName] = useState("Pastor John Doe")
@@ -37,6 +40,16 @@ export default function Note() {
     alert("Note deleted!")
   }
 
+  // const handleNoteChanges = (first) => { second }
+
+  const handleBack = () => {
+    if(mode === "edit"){
+      setMode('view')
+    }
+    else{
+      navigate(-1)
+    }
+   }
   return (
     <div className="flex flex-col min-h-screen">
       <button
@@ -120,7 +133,7 @@ export default function Note() {
           )}
 
           {mode === "view" ? (
-            <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line mb-4">{content}</p>
+            <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line mb-4 mt-4">{content}</p>
           ) : (
             <Textarea
               value={content}
@@ -133,7 +146,7 @@ export default function Note() {
             references.length > 0 && (
               <div className="mt-4 flex items-center">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  References:{" "}
+                  Biblic References:{" "}
                   <span className="underline decoration-dashed cursor-pointer">{references.join(", ")}</span>
                 </p>
               </div>
@@ -151,9 +164,9 @@ export default function Note() {
         {(mode === "edit" || isEditingVideo) && (
           <div className="flex justify-end gap-2">
             {mode === "edit" && (
-              <Button variant="destructive" onClick={handleDelete}>
+              <Button onClick={handleDelete}>
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete
+                Cancel
               </Button>
             )}
             <Button onClick={handleSave}>
