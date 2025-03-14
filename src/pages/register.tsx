@@ -22,9 +22,9 @@ import { Link, useNavigate } from "react-router";
 import { Pen, X } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
-import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/use-auth";
+import { useState } from "react";
+
 
 const registerSchema = z
   .object({
@@ -53,7 +53,6 @@ const registerSchema = z
   });
 
 export default function Register() {
-  const {  isLoading,user } = useAuth();
   const navigate = useNavigate();
   const registerForm = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -155,12 +154,6 @@ export default function Register() {
       confirmPassword: "",
     });
   }
-
-  useEffect(() => {
-    if (user && !isLoading) {
-      navigate("/notes");
-    }
-  }, []);
   return (
     <div className="flex flex-col justify-center items-center min-h-screen bg-gray-100 p-4">
       <Card className="w-full max-w-md border-none shadow-none">

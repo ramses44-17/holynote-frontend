@@ -27,7 +27,7 @@ export default function LandingPage() {
             reach because every message matters.
           </p>
           <div className="space-x-4">
-            <Link to="/register">
+            <Link to="/auth/register">
               <Button size="lg" className="bg-blue-500 hover:bg-blue-600">
                 Get Started
               </Button>

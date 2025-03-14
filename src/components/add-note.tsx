@@ -25,9 +25,13 @@ const noteSchema = z.object({
   }).min(1, "topic is required").max(60, "topic must be no longer than 60 characters"),
   content: z.string().optional(), // Peut être une chaîne vide
   color: z.string().max(10).default("red"),
-  references: z.string().regex(/^([a-zA-Z]+\s\d{1,3}(:\d{1,3}(-\d{1,3})?)?,?\s?)+$/,{
-    message:"invalid references format"
-  }).optional(),
+  references: z.string().regex(
+    /^([a-zA-ZÀ-ÿ]+\s\d{1,3}(:\d{1,3}(-\d{1,3})?)?(,\s[a-zA-ZÀ-ÿ]+\s\d{1,3}(:\d{1,3}(-\d{1,3})?)?)*)$/,
+    {
+      message: "Invalid references format",
+    }
+  )
+  .optional(),
   youtubeUrl: z.string().url("invalid youtube url").regex(youtubeUrlRegex, "invalid youtube url").optional(),
   preacher: z.string({
     message:"preacher name is required"
@@ -35,15 +39,7 @@ const noteSchema = z.object({
   date: z
   .string({
     required_error: "Date is required",
-  })
-  .refine(
-    (val) => {
-      return !isNaN(Date.parse(val))
-    },
-    {
-      message: "Invalid date format, please provide date in YYYY-MM-DD",
-    },
-  )
+  }).date()
 })
 
 const colorOptions = [
@@ -58,6 +54,7 @@ interface AddNoteModalProps {
   open:boolean
   setOpen:Dispatch<SetStateAction<boolean>>
 }
+
 
 export default function AddNoteModal({open,setOpen}:AddNoteModalProps) {
   const form = useForm<z.infer<typeof noteSchema>>({
@@ -136,8 +133,7 @@ export default function AddNoteModal({open,setOpen}:AddNoteModalProps) {
                   <Calendar
                     mode="single"
                     selected={field.value ? new Date(field.value) : undefined}
-                    onSelect={(date) => field.onChange(date?.toISOString())}
-                    disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                    onSelect={(date) => field.onChange(format(new Date(date!), "yyyy-MM-dd"))}
                     initialFocus
                   />
                 </PopoverContent>

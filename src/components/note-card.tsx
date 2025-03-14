@@ -2,6 +2,7 @@ import { Edit, MoreVertical, Trash2, Youtube } from "lucide-react"
 import { Button } from "./ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import useFetchVideo from "@/hooks/use-fetch-youtube-video-info"
+import { useNavigate } from "react-router"
 
 
 interface NoteProps {
@@ -78,12 +79,11 @@ export default function NoteCard({ id, topic, preacher, date, color, content, re
     day: "numeric",
   })
 
-  //ajouter l'image du lien youtube si le lien est fourni en bas de la card
-  const handleEdit = (event:React.MouseEvent<HTMLDivElement>) => {
+  const navigate = useNavigate()
+  const handleEdit = (event:React.MouseEvent<HTMLDivElement>,noteId?:string) => {
     event.preventDefault()
     event.stopPropagation()
-    console.log(`Edit note ${id}`)
-    // Add your edit logic here
+    navigate(`/notes/${noteId}`)
   }
 
   const handleDelete = (event:React.MouseEvent<HTMLDivElement>) => {
@@ -106,7 +106,7 @@ export default function NoteCard({ id, topic, preacher, date, color, content, re
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={handleEdit}>
+            <DropdownMenuItem onClick={(event) => handleEdit(event,id)}>
               <Edit className="mr-2 h-4 w-4" />
               <span>Edit</span>
             </DropdownMenuItem>

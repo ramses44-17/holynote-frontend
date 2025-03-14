@@ -18,11 +18,11 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { Link, Navigate, useNavigate } from "react-router";
+import { Link, Navigate} from "react-router";
 import { Pen, X } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -38,8 +38,8 @@ const loginSchema = z.object({
 });
 
 export default function Register() {
-  const { isLoading,refetch,user } = useAuth();
-  const navigate = useNavigate();
+  const { isLoading,refetch } = useAuth();
+  
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const loginMutation = useMutation({
     mutationFn: async (data: z.infer<typeof loginSchema>) => {
@@ -99,12 +99,7 @@ export default function Register() {
       });
     }
   }
-  useEffect(() => {
-    if(user && !isLoading){
-      navigate("/notes")
-    }    
-  },[]
-  )
+ 
 
   if(loginMutation.isSuccess && !isLoading){
     return <Navigate to="/notes" />

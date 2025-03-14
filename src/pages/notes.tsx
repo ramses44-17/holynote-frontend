@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useState } from "react"
 import Header, { Mode } from "@/components/header"
 import NoteCard from "@/components/note-card"
-import {  Plus, SearchIcon } from "lucide-react"
+import {  Plus } from "lucide-react"
 import { Link } from "react-router"
 import AddNoteModal from "@/components/add-note"
 import axios from "axios"
@@ -17,14 +17,6 @@ const fetchNotes = async () => {
 }
 
 
-//regler les problemes de type
-//améliorer le modal pour ajouter une note
-// teste la route d'ajout des notes
-// tester la route de suppression des notes
-
-
-
-//refactorsiser le context pour utiliser zustand
 
 function NewNoteCard({ setOpen}:{
   setOpen:Dispatch<SetStateAction<boolean>>
@@ -56,23 +48,10 @@ const { data: notes, isLoading, isError } = useQuery({
   queryFn:fetchNotes
 });
 
+
+//faire un bon loader
 if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error loading notes</div>;
- const fileredNote = notes.filter((note) => {
-  if(filterBy === "all" && searchTerm){
-    return note.topic.toLowerCase().includes(searchTerm.toLowerCase()) || note.preacher.toLowerCase().includes(searchTerm.toLowerCase()) || note.content.toLowerCase().includes(searchTerm.toLowerCase()) || note.references.join(" ").toLowerCase().includes(searchTerm.toLowerCase())
-  }
-  if(filterBy === "last-week"){
-    const lastWeek = new Date()
-    lastWeek.setDate(lastWeek.getDate() - 7)
-    return note.date >= lastWeek
-  }
-  if(filterBy === "last-months"){
-    const last3Months = new Date()
-    last3Months.setMonth(last3Months.getMonth() - 3)
-    return note.date >= last3Months
-  }
- })
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -118,51 +97,7 @@ if (isLoading) return <div>Loading...</div>;
           ):
           (
             <div>
-              {
-                !searchTerm && filterBy === "all" && (
-                  <div className="flex flex-col items-center justify-center">
-                    <div className="flex flex-col items-center gap-4">
-                    <SearchIcon/>
-                    <h1 className="text-3xl font-bold text-foreground">
-                      Enter a search term to find notes
-                    </h1>
-                    </div>
-                  </div>
-                )
-              }
-              {
-                (searchTerm && fileredNote.length > 0) || (!searchTerm && fileredNote.length > 0) && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {fileredNote.map((note) => (
-                      <Link
-                        to={`/notes/${note.id}`}
-                        key={note.id}
-                        className="block h-full transition-opacity hover:opacity-95"
-                      >
-                        <NoteCard
-                          id={note.id.toString()}
-                          topic={note.topic}
-                          preacher={note.preacher}
-                          date={note.date}
-                          color={note.color}
-                          content={note.content}
-                          references={note.references}
-                          youtubeId={note.youtubeId}
-                        />
-                      </Link>
-                    ))}
-                  </div>
-                )
-              }
-              {
-                searchTerm && (fileredNote.length === 0 && filterBy !== "all") && (
-                  <div className="flex items-center justify-center py-16">
-                    <h1 className="text-3xl font-bold text-foreground">
-                      No notes found
-                    </h1>
-                  </div>
-                )
-              }
+              this is search mode
             </div>
           )
         }
