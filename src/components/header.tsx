@@ -6,6 +6,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dispatch, SetStateAction } from "react"
 import SearchBar from "./search-bar"
 import { useAuth } from "@/hooks/use-auth"
+import axios from "axios"
+import { useMutation } from "@tanstack/react-query"
+import { toast } from "@/hooks/use-toast"
 
 
 export type Mode = "view" | "search"
@@ -18,8 +21,30 @@ interface HeaderProps {
   filterBy:string
   setFilterBy:Dispatch<SetStateAction<string>>
 }
+
+const useLogout = () => {
+  return useMutation({
+    mutationFn:async () => {
+      return axios.post("https://localhost:3000/api/users/logout", {}, { withCredentials: true });
+    },
+    onSuccess: () => { 
+      window.location.reload()
+    },
+    onError: () => {
+        toast({
+          title: "Error",
+          description: "Error while logout",
+          variant: "error",
+        });
+    },
+  })
+};
+
 export default function Header({mode,setMode,searchTerm,setFilterBy,setSearchTerm,filterBy}:HeaderProps) {
   const { user } = useAuth()
+  const { mutate: logout,isPending} = useLogout();
+
+  
   
   return mode === "view" ? (
     <header className="p-4 flex justify-between items-center border-b bg-white text-black">
@@ -46,9 +71,9 @@ export default function Header({mode,setMode,searchTerm,setFilterBy,setSearchTer
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem className="text-red-600 cursor-pointer" onClick={() => {}}>
+            <DropdownMenuItem className="text-red-600 cursor-pointer"onClick={() => logout()} disabled={isPending}>
               <LogOut className="mr-2 h-4 w-4" />
-              <span>Logout</span>
+              <span>{isPending ? "Logging out..." : "Logout"}</span>
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" onClick={() => {}}>
               <Settings className="mr-2 h-4 w-4" />

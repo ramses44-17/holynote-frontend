@@ -62,7 +62,7 @@ export default function Register() {
     onError: (error: AxiosError) => {
       if (error.response?.status === 500) {
         toast({
-          title: "",
+          title: "error",
           description: "internal server error, please try later",
           variant: "error",
         });
@@ -182,7 +182,7 @@ export default function Register() {
         <CardFooter className="flex flex-col items-center">
           <p className="mt-2 text-xs text-center text-gray-700">
             Dont have an account ?{" "}
-            <Link to="/register" className="underline hover:text-blue-600">
+            <Link to="/auth/register" className="underline hover:text-blue-600">
               Sign Up
             </Link>
           </p>

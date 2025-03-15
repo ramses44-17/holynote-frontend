@@ -1,10 +1,13 @@
-import { useState } from "react"
-import { useNavigate, useParams } from "react-router"
+import { Navigate, useNavigate, useParams } from "react-router"
 import {    ArrowLeft } from "lucide-react"
 import axios from "axios"
 import {  useQuery } from "@tanstack/react-query"
 import ViewMode from "@/components/view-mode"
 import EditMode from "@/components/edit-mode"
+import { useUserStore } from "@/stores/app-store"
+import Error from "@/components/error"
+import NotFound from "@/components/not-found"
+import Loader from "@/components/loader"
 
 
 
@@ -19,18 +22,29 @@ const fetchNoteDetails = async (noteId?:string) => {
 export default function Note() {
 
 
-  const [mode, setMode] = useState<"view" | "edit">("view")
+  const { mode,setMode} = useUserStore()
  
   const noteId = useParams().noteId
   const navigate = useNavigate()
-  const { data: note, isLoading, isError,refetch } =  useQuery({
+  const { data: note, isLoading, isError,refetch,error } =  useQuery({
     queryKey: ["note",noteId], 
-    queryFn: () =>  fetchNoteDetails(noteId)
+    queryFn: () =>  fetchNoteDetails(noteId),
   });
   
 
-  if (isLoading) return <div>Loading...</div>;
-    if (isError) return <div>Error loading notes</div>;
+  if (isLoading) return <Loader/>;
+  if (isError) {
+    if (axios.isAxiosError(error)) {
+      if (error.response?.status === 401) {
+        return <Navigate to="/auth" />;
+      }
+      if (error.response?.status === 404) {
+        return <NotFound/>;
+      }
+    }
+    return <Error/>;
+  }
+
 
   
 
@@ -41,7 +55,7 @@ export default function Note() {
       setMode('view')
     }
     else{
-      navigate(-1)
+      navigate("/notes")
     }
    }
 
@@ -60,7 +74,6 @@ export default function Note() {
           {
           mode === "view" && (
             <ViewMode
-            setMode={setMode}
             content={note?.content}
             date={note?.date}
             preacher={note?.preacher}
@@ -75,7 +88,6 @@ export default function Note() {
 
         {mode === "edit" && (
           <EditMode
-          setMode={setMode}
           content={note?.content}
           date={note?.date}
           preacher={note?.preacher}

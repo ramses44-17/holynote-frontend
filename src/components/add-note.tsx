@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
@@ -13,7 +14,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useState} from "react";
+import axios, { AxiosError } from "axios";
+import { useNavigate } from "react-router";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "@/hooks/use-toast";
+import { ToastAction } from "./ui/toast";
+import {bookNames} from "@/lib/bible"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "./ui/command";
 
 
 
@@ -69,13 +77,62 @@ export default function AddNoteModal({open,setOpen}:AddNoteModalProps) {
     },
   });
 
+const navigate = useNavigate()
+  const addNoteMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof noteSchema>) => {
+      const response = await axios.post(
+        `https://localhost:3000/api/notes`,
+        data,
+        {
+          withCredentials: true,
+        }
+      );
+      return response.data;
+    },
+    onSuccess:  (data) => {
+      navigate(`/notes/${data.id}`)
+      toast({
+        title: "Note created successfuly",
+        variant: "success",
+      });
+    },
+    onError: (error: AxiosError,variables) => {
+      toast({
+        title: "Error while initializing note",
+        variant: "error",
+        action:<ToastAction altText="Try again"
+        onClick={ () => addNoteMutation.mutate(variables!)}
+        >Try again</ToastAction>
+      });
+      console.log("Error updating note",error);
+    },
+  })
+
   function onSubmit(values: z.infer<typeof noteSchema>) {
-    console.log(values);
+    addNoteMutation.mutate(values)
   }
 
+
+  const [referencesInputValue,setReferencesInputValue] = useState("")
+
+  const handleReferencesInputChange =(value:string) => { 
+    setReferencesInputValue(value)
+   }
+
+   const addBookToInput = (book: string) => {
+    console.log(book);
+    
+    const updatedValue = referencesInputValue ? `${referencesInputValue}, ${book}` : book;
+    setReferencesInputValue(updatedValue);
+    form.setValue("references", updatedValue);
+    console.log("must work");
+    
+  };
+  
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
+      <DialogTitle aria-describedby="note">Initialize note</DialogTitle>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
             {/* Champ : Sujet */}
@@ -183,10 +240,31 @@ export default function AddNoteModal({open,setOpen}:AddNoteModalProps) {
                 <FormItem>
                   <FormLabel>Biblic references</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Enter biblic references (ex: Jean 3:16, Luc 1:13)"
+                    <Command>
+                    <CommandInput  placeholder="Enter biblic references (ex: Jean 3:16, Luc 1:13)"
                       {...field}
-                    />
+                      onValueChange={(value) => handleReferencesInputChange(value)}
+                      value={referencesInputValue}
+                      />
+                      <CommandList className="h-22">
+                        <CommandEmpty>No results found.</CommandEmpty>
+                        <CommandGroup heading="Suggestions">
+                          
+                          
+                          {
+                            bookNames.map((book,index) => (
+                              <CommandItem  key={index}><Button 
+                              className="border-none shadow-none hover:bg-gray-100"
+                              variant="outline"
+                              onClick={() => addBookToInput(book)}>
+                              {book}
+                            </Button></CommandItem>
+                            ))
+                          }
+                        </CommandGroup>
+                      
+                    </CommandList>
+                    </Command>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -209,8 +287,9 @@ export default function AddNoteModal({open,setOpen}:AddNoteModalProps) {
               )}
             />
             {/* Bouton de soumission */}
-            <Button type="submit" className="w-full">
-              Initialize note
+            <Button type="submit" className="w-full" disabled={addNoteMutation.isPending}
+            >
+            {addNoteMutation.isPending ? "initializing..." :"initialize"}
             </Button>
           </form>
         </Form>

@@ -18,10 +18,10 @@ export default function PublicHeader() {
             asChild
             className="border border-blue-700 text-blue-700 bg-none font-bold hover:bg-none"
           >
-            <Link to="/login">Login</Link>
+            <Link to="/auth">Login</Link>
           </Button>
           <Button variant="default" size="sm" className="bg-blue-700 hover:bg-blue-600 text-white font-bold" asChild>
-            <Link to="/register">Sign Up</Link>
+            <Link to="/auth/register">Sign Up</Link>
           </Button>
         </nav>
     </header>

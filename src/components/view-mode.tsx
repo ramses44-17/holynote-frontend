@@ -1,21 +1,22 @@
 import { format } from "date-fns"
 import {fr} from "date-fns/locale"
-import type { Dispatch, SetStateAction } from "react"
 import { Button } from "./ui/button"
 import { Edit, BookOpen } from "lucide-react"
 import { YouTubeEmbed } from "@/components/youtube-embeb"
+import { useUserStore } from "@/stores/app-store"
 
 interface ViewModeProps {
   date?: string
   topic?: string
   preacher?: string
-  setMode: Dispatch<SetStateAction<"view" | "edit">>
   youtubeId?: string
   content?: string
   references?: string[]
 }
 
-export default function ViewMode({ date, topic, setMode, youtubeId, content, references, preacher }: ViewModeProps) {
+export default function ViewMode({ date, topic, youtubeId, content, references, preacher }: ViewModeProps) {
+
+  const {setMode} = useUserStore()
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex justify-between items-start mb-8">
@@ -96,3 +97,4 @@ export default function ViewMode({ date, topic, setMode, youtubeId, content, ref
   )
 }
 
+//dans onclick on prend ref et c'est avec refe que l'on va faire des traitement et aussi il y'uras une modal dont l'etat sera contolé aussi pour afficher les notes 

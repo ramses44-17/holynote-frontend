@@ -1,17 +1,11 @@
-import { Link, useNavigate } from "react-router"; // Correction de l'import
+import { Link} from "react-router"; // 
 import { Button } from "@/components/ui/button";
 import { Notebook, Search } from "lucide-react";
-import { JSX, useEffect } from "react";
-import { useAuth } from "@/hooks/use-auth";
+import { JSX } from "react";
+
 
 export default function LandingPage() {
-  const { user } = useAuth();
-  const navigate = useNavigate()
- useEffect(() => {
-    if (user) {
-      navigate("/notes");
-    }
-  }, [user, navigate]);
+  
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#1a1a1a] via-[#2d2d2d] to-[#3a3a3a] text-white">
       

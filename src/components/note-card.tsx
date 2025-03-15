@@ -3,6 +3,7 @@ import { Button } from "./ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import useFetchVideo from "@/hooks/use-fetch-youtube-video-info"
 import { useNavigate } from "react-router"
+import { useUserStore } from "@/stores/app-store"
 
 
 interface NoteProps {
@@ -71,7 +72,7 @@ function YouTubeThumbnail({ youtubeId }: { youtubeId: string | null}) {
 
 export default function NoteCard({ id, topic, preacher, date, color, content, references ,youtubeId}:NoteProps) {
 
-
+const {setMode} = useUserStore()
 
   const formattedDate = new Date(date).toLocaleDateString("en-US", {
     year: "numeric",
@@ -83,6 +84,7 @@ export default function NoteCard({ id, topic, preacher, date, color, content, re
   const handleEdit = (event:React.MouseEvent<HTMLDivElement>,noteId?:string) => {
     event.preventDefault()
     event.stopPropagation()
+    setMode('edit')
     navigate(`/notes/${noteId}`)
   }
 

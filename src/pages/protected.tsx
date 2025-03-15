@@ -2,6 +2,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { ReactNode } from "react";
 import { Navigate } from "react-router";
 import axios from "axios";
+import Error from "@/components/error";
 
 const Protected = ({ children }: { children: ReactNode }) => {
   const { isError, error } = useAuth();
@@ -11,7 +12,7 @@ const Protected = ({ children }: { children: ReactNode }) => {
         return <Navigate to="/auth" />;
       }
     }
-    return <Navigate to="/auth" />;
+    return <Error/>;
   }
   return children;
 };

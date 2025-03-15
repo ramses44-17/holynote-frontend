@@ -12,7 +12,6 @@ interface AuthContextType {
   isLoading:boolean;
   isError:boolean;
   error:Error | null;
-  refetch:(options?: RefetchOptions) => Promise<QueryObserverResult<any, Error>>
-  
+  refetch:(options?: RefetchOptions) => Promise<QueryObserverResult<any, Error>>  
 }
 export const AuthContext = createContext<AuthContextType | null>(null)

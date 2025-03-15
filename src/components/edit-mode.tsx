@@ -7,14 +7,16 @@ import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@radix-ui/react-select"
 import { Button } from "@/components/ui/button"
-import { CalendarIcon, Save} from "lucide-react"
-import { Dispatch, SetStateAction, useEffect } from "react";
+import { CalendarIcon, Pencil, Save, Trash2, X} from "lucide-react"
+// import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { YouTubeEmbed } from "./youtube-embeb";
 import axios, { AxiosError } from "axios";
 import { QueryObserverResult, RefetchOptions, useMutation } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { ToastAction } from "./ui/toast";
+import { useUserStore } from "@/stores/app-store";
+import { useState } from "react";
 
 
 
@@ -22,7 +24,6 @@ interface EditModeProps {
   date?:string;
   topic?:string;
   preacher?:string
-  setMode:Dispatch<SetStateAction<"view" | "edit">>;
   youtubeId?:string;
   content?:string;
   references?:string[]
@@ -72,21 +73,28 @@ const extractYoutubeId = (url?: string | null): string | null => {
   return match ? match[1] : null
 }
 
-export default function EditMode({date,topic,setMode,youtubeId,content,references,preacher,color,noteId,refetch}:EditModeProps) {
+export default function EditMode({date,topic,youtubeId,content,references,preacher,color,noteId,refetch}:EditModeProps) {
 
+
+  const {setMode} = useUserStore()
 
   const form = useForm<z.infer<typeof noteSchema>>({
     resolver: zodResolver(noteSchema),
     defaultValues: {
-      topic:  "",
-      preacher:"",
-      content: "",
-      color:"red",
-      date: "",
-      references: "",
+      topic:  topic||"",
+      preacher:preacher||"",
+      content: content||"",
+      color:color||"red",
+      date: date||"",
+      references: references?.join(",") ||"",
       youtubeUrl:undefined
     },
   });
+
+  // const [isModified,setIsModified] = useState(false)
+  //legere modification  à apporter ici sur l'affichage de la video youtube, des references et du bouton d'enregistrement
+
+ 
 
   const updateNoteMutation = useMutation({
     mutationFn: async (data: z.infer<typeof noteSchema>) => {
@@ -119,24 +127,20 @@ export default function EditMode({date,topic,setMode,youtubeId,content,reference
     },
   })
 
+  const [localYoutubeId, setLocalYoutubeId] = useState<string | null | undefined>(youtubeId);
+
   const youtubeUrl = form.watch("youtubeUrl")
-  const currentYoutubeId = youtubeUrl ? extractYoutubeId(youtubeUrl) : youtubeId
+  const currentYoutubeId = youtubeUrl ? extractYoutubeId(youtubeUrl) : localYoutubeId
 
 
-  useEffect(() => {
-      form.reset({
-        topic: topic || "",
-        preacher: preacher || "",
-        content: content || "",
-        color: color || "red",
-        date: date || "",
-        references: references?.join(", ") || "",
-      });
-  }, [topic,preacher,content,color,date,references,form]);
+
+
+
 
   function onSubmit(values: z.infer<typeof noteSchema>) {
     updateNoteMutation.mutate(values)
   }
+  const [showYoutubeInput, setShowYoutubeInput] = useState(false);
   return (
     <>
             <Form {...form}>
@@ -207,30 +211,66 @@ export default function EditMode({date,topic,setMode,youtubeId,content,reference
                   )}
                 />
 
-                {/* YouTube Video Preview */}
-                <div className="mb-4">
-                  {currentYoutubeId && (
-                    <div className="mt-2 mb-4">
-                      <YouTubeEmbed videoId={currentYoutubeId} />
-                    </div>
-                  )}
+               {/* YouTube Video Preview */}
+<div className="mb-4">
+  {currentYoutubeId && (
+    <div className="flex">
+      <YouTubeEmbed videoId={currentYoutubeId} />
+      
+      {/* Boutons d'édition et de suppression */}
+      <div className="">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setShowYoutubeInput(true)}
+        >
+          <Pencil className="h-5 w-5 text-gray-500 hover:text-gray-800" />
+        </Button>
+        
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => {
+            form.setValue("youtubeUrl", undefined);
+            setShowYoutubeInput(false);
+            setLocalYoutubeId(null);
+          }}
+        >
+          <Trash2 className="h-5 w-5 text-red-500 hover:text-red-700" />
+        </Button>
+      </div>
+    </div>
+  )}
 
-                  <FormField
-                    control={form.control}
-                    name="youtubeUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            placeholder="Enter YouTube URL (e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ)"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+  {/* Input YouTube (affiché seulement si demandé) */}
+  {(showYoutubeInput || !youtubeId) && (
+    <FormField
+      control={form.control}
+      name="youtubeUrl"
+      render={({ field }) => (
+        <FormItem className="relative">
+          <FormControl>
+            <Input
+              placeholder="Enter YouTube URL (e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ)"
+              {...field}
+            />
+          </FormControl>
+
+          {/* Bouton pour cacher l'input */}
+          <button
+            type="button"
+            className="absolute right-2 top-2 text-gray-500 hover:text-gray-800"
+            onClick={() => setShowYoutubeInput(false)}
+          >
+            <X className="h-5 w-5" />
+          </button>
+          
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  )}
+</div>
 
                 {/* Champ : Contenu */}
                 <FormField

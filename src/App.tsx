@@ -8,13 +8,14 @@ import { AuthProvider } from "./contexts/providers/authprovider";
 import Protected from "./pages/protected";
 import MainLayout from "./layouts/main-layout";
 import AuthLayout from "./layouts/auth-layout";
+import NotFound from "./components/not-found";
 
 function App() {
 
   //enlever auth provider et remplacer par zustand...
   return (
-    <AuthProvider>
       <Router>
+         <AuthProvider>
         <Routes>
           {/**main layout */}
         <Route path="/" element={<MainLayout/>}>
@@ -24,7 +25,7 @@ function App() {
  {/**auth layout */}
     <Route path="/auth" element={<AuthLayout/>}>
     <Route index  element={<Login />} />
-    <Route path="auth/register" element={<Register />} />
+    <Route path="/auth/register" element={<Register />} />
     </Route>
 
      {/**protected */}
@@ -45,10 +46,11 @@ function App() {
             }
           />
            {/**Not found page */}
-          <Route path="*" element={<p>Not found</p>} />
+          <Route path="*" element={<NotFound/>} />
         </Routes>
+        </AuthProvider>
       </Router>
-    </AuthProvider>
+  
   );
 }
 

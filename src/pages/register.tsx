@@ -83,7 +83,7 @@ export default function Register() {
         variant: "success",
         duration: 3000,
       });
-      navigate("/login");
+      navigate("/auth");
     },
     onError: (error: AxiosError) => {
       // Vérification si l'erreur a une réponse (statut HTTP)
@@ -261,7 +261,7 @@ export default function Register() {
         <CardFooter className="flex flex-col items-center">
           <p className="mt-2 text-xs text-center text-gray-700">
             Do you already have an account?{" "}
-            <Link to="/login" className="underline hover:text-blue-600">
+            <Link to="/auth" className="underline hover:text-blue-600">
               Log In
             </Link>
           </p>

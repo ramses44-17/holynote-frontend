@@ -2,10 +2,12 @@ import { Dispatch, SetStateAction, useState } from "react"
 import Header, { Mode } from "@/components/header"
 import NoteCard from "@/components/note-card"
 import {  Plus } from "lucide-react"
-import { Link } from "react-router"
+import { Link, Navigate } from "react-router"
 import AddNoteModal from "@/components/add-note"
 import axios from "axios"
 import { useQuery } from "@tanstack/react-query"
+import Error from "@/components/error"
+import Loader from "@/components/loader"
 
 
 
@@ -43,15 +45,22 @@ const [isOpen,setIsOpen]  = useState(false)
 const [mode,setMode] = useState<Mode>('view')
 const [searchTerm,setSearchTerm] = useState<string>("")
 const [filterBy,setFilterBy] = useState<string>("all")
-const { data: notes, isLoading, isError } = useQuery({
+const { data: notes, isLoading, isError,error } = useQuery({
   queryKey: ["notes"], 
   queryFn:fetchNotes
 });
 
 
 //faire un bon loader
-if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error loading notes</div>;
+if (isLoading) return <Loader/>;
+if (isError) {
+  if (axios.isAxiosError(error)) {
+    if (error.response?.status === 401) {
+      return <Navigate to="/auth" />;
+    }
+  }
+  return <Error/>;
+}
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
