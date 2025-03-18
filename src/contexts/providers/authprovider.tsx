@@ -4,6 +4,7 @@ import {  ReactNode} from "react";
 import { AuthContext } from "./auth-context";
 import Error from "@/components/error";
 import Loader from "@/components/loader";
+import { apiBaseUrl } from "@/lib/utils";
 
 
 
@@ -16,7 +17,7 @@ export  const AuthProvider = ({children}:{children:ReactNode}) => {
     const { data, isLoading, isError, error,refetch} = useQuery({
       queryKey:["me"],
       queryFn:async() => {
-        const response = await axios.get("https://localhost:3000/api/users/me",{
+        const response = await axios.get(`${apiBaseUrl}/users/me`,{
           withCredentials:true
         })
         return response.data.user

@@ -9,10 +9,10 @@ import Protected from "./pages/protected";
 import MainLayout from "./layouts/main-layout";
 import AuthLayout from "./layouts/auth-layout";
 import NotFound from "./components/not-found";
+import AddNotePage from "./pages/add-note-page";
 
 function App() {
 
-  //enlever auth provider et remplacer par zustand...
   return (
       <Router>
          <AuthProvider>
@@ -42,6 +42,14 @@ function App() {
             element={
               <Protected>
                 <Note />
+              </Protected>
+            }
+          />
+          <Route
+            path="/new"
+            element={
+              <Protected>
+                <AddNotePage />
               </Protected>
             }
           />

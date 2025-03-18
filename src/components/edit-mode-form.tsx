@@ -7,7 +7,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@radix-ui/react-select"
 import { Button } from "@/components/ui/button"
-import { CalendarIcon, Pencil, Save, Trash2, X} from "lucide-react"
+import { CalendarIcon, Check, Pencil, Save, Trash2, X} from "lucide-react"
 // import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { YouTubeEmbed } from "./youtube-embeb";
@@ -16,7 +16,12 @@ import { QueryObserverResult, RefetchOptions, useMutation } from "@tanstack/reac
 import { toast } from "@/hooks/use-toast";
 import { ToastAction } from "./ui/toast";
 import { useUserStore } from "@/stores/app-store";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {bookNames} from "@/lib/bible"
+import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "./ui/command";
+import { Badge } from "./ui/badge";
+import { apiBaseUrl, extractYoutubeId, youtubeUrlRegex } from "@/lib/utils";
+import BibleDialog from "./bible-dialog";
 
 
 
@@ -35,7 +40,11 @@ interface EditModeProps {
 
 
 
-const youtubeUrlRegex = /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+
+
+
+
+
 
 const noteSchema = z.object({
   topic: z.string({
@@ -67,13 +76,15 @@ const colorOptions = [
 ];
 
 
-const extractYoutubeId = (url?: string | null): string | null => {
-  if (!url) return null
-  const match = url.match(youtubeUrlRegex)
-  return match ? match[1] : null
-}
+
 
 export default function EditMode({date,topic,youtubeId,content,references,preacher,color,noteId,refetch}:EditModeProps) {
+
+
+  const [selectedReferences, setSelectedReferences] = useState<string[]>(references!)
+    const [referencesInputValue, setReferencesInputValue] = useState("")
+    const [filteredBooks, setFilteredBooks] = useState(bookNames)
+  
 
 
   const {setMode} = useUserStore()
@@ -91,15 +102,13 @@ export default function EditMode({date,topic,youtubeId,content,references,preach
     },
   });
 
-  // const [isModified,setIsModified] = useState(false)
-  //legere modification  à apporter ici sur l'affichage de la video youtube, des references et du bouton d'enregistrement
 
  
 
   const updateNoteMutation = useMutation({
     mutationFn: async (data: z.infer<typeof noteSchema>) => {
       const response = await axios.patch(
-        `https://localhost:3000/api/notes/${noteId}`,
+        `${apiBaseUrl}/notes/${noteId}`,
         data,
         {
           withCredentials: true,
@@ -133,6 +142,95 @@ export default function EditMode({date,topic,youtubeId,content,references,preach
   const currentYoutubeId = youtubeUrl ? extractYoutubeId(youtubeUrl) : localYoutubeId
 
 
+useEffect(() => {
+    form.setValue("references", selectedReferences.join(", "))
+  }, [selectedReferences, form])
+
+  // Filtrer les livres en fonction de la saisie
+  useEffect(() => {
+    if (referencesInputValue) {
+      const parts = referencesInputValue.split(" ")
+      if (parts.length === 1) {
+        setFilteredBooks(bookNames.filter((book) => book.toLowerCase().includes(parts[0].toLowerCase())))
+      } else {
+        setFilteredBooks(bookNames)
+      }
+    } else {
+      setFilteredBooks(bookNames)
+    }
+  }, [referencesInputValue])
+
+  // Valider et ajouter une référence
+  const addReference = () => {
+    if (!referencesInputValue.trim()) return
+
+    // Extraire le livre et le reste de la référence
+    const parts = referencesInputValue.trim().split(" ")
+    if (parts.length < 2) {
+      toast({
+        title: "Format invalide",
+        description: "Veuillez entrer un livre et un chapitre (ex: Jean 3).",
+        variant: "error",
+      })
+      return
+    }
+
+    // Vérifier si le livre existe
+    let bookName = ""
+    let restOfReference = ""
+
+    // Trouver le livre le plus long qui correspond
+    for (let i = 1; i < parts.length; i++) {
+      const potentialBook = parts.slice(0, i).join(" ")
+      const potentialRest = parts.slice(i).join(" ")
+
+      if (bookNames.includes(potentialBook)) {
+        bookName = potentialBook
+        restOfReference = potentialRest
+      }
+    }
+
+    if (!bookName) {
+      toast({
+        title: "Livre invalide",
+        description: "Le livre biblique n'est pas reconnu.",
+        variant: "error",
+      })
+      return
+    }
+
+    // Valider le format du chapitre et des versets
+    const chapterVerseRegex = /^(\d+)(?::(\d+)(?:-(\d+))?)?$|^(\d+)\s+(\d+)(?:-(\d+))?$/
+    const match = restOfReference.match(chapterVerseRegex)
+
+    if (!match) {
+      toast({
+        title: "Format invalide",
+        description: "Format accepté: livre chapitre, livre chapitre:verset, ou livre chapitre verset-versetFin",
+        variant: "error",
+      })
+      return
+    }
+
+    // Formater la référence
+    const reference = `${bookName} ${restOfReference}`
+
+    // Ajouter si elle n'existe pas déjà
+    if (!selectedReferences.includes(reference)) {
+      setSelectedReferences((prev) => [...prev, reference])
+      setReferencesInputValue("")
+    }
+  }
+
+  // Supprimer une référence
+  const removeReference = (reference: string) => {
+    setSelectedReferences((prev) => prev.filter((ref) => ref !== reference))
+  }
+
+  // Ajouter un livre à l'entrée
+  const addBookToInput = (book: string) => {
+    setReferencesInputValue(book + " ")
+  }
 
 
 
@@ -141,6 +239,16 @@ export default function EditMode({date,topic,youtubeId,content,references,preach
     updateNoteMutation.mutate(values)
   }
   const [showYoutubeInput, setShowYoutubeInput] = useState(false);
+  console.log(showYoutubeInput);
+  const [open,setOpen] = useState(false)
+  const [passage,setPassage] = useState("")
+
+  
+
+  const handleReferencesClick = (passage: string) => {
+    setOpen(true)
+    setPassage(passage)
+  }
   return (
     <>
             <Form {...form}>
@@ -218,21 +326,15 @@ export default function EditMode({date,topic,youtubeId,content,references,preach
       <YouTubeEmbed videoId={currentYoutubeId} />
       
       {/* Boutons d'édition et de suppression */}
-      <div className="">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setShowYoutubeInput(true)}
-        >
-          <Pencil className="h-5 w-5 text-gray-500 hover:text-gray-800" />
-        </Button>
+      <div>
         
         <Button
+        type="button"
           variant="ghost"
           size="icon"
           onClick={() => {
             form.setValue("youtubeUrl", undefined);
-            setShowYoutubeInput(false);
+            setShowYoutubeInput(true);
             setLocalYoutubeId(null);
           }}
         >
@@ -243,33 +345,27 @@ export default function EditMode({date,topic,youtubeId,content,references,preach
   )}
 
   {/* Input YouTube (affiché seulement si demandé) */}
+  <div>
   {(showYoutubeInput || !youtubeId) && (
     <FormField
       control={form.control}
       name="youtubeUrl"
       render={({ field }) => (
         <FormItem className="relative">
+          <FormLabel>Sermon youtube link</FormLabel>
           <FormControl>
             <Input
               placeholder="Enter YouTube URL (e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ)"
               {...field}
             />
           </FormControl>
-
-          {/* Bouton pour cacher l'input */}
-          <button
-            type="button"
-            className="absolute right-2 top-2 text-gray-500 hover:text-gray-800"
-            onClick={() => setShowYoutubeInput(false)}
-          >
-            <X className="h-5 w-5" />
-          </button>
-          
           <FormMessage />
         </FormItem>
       )}
     />
   )}
+  </div>
+
 </div>
 
                 {/* Champ : Contenu */}
@@ -278,6 +374,7 @@ export default function EditMode({date,topic,youtubeId,content,references,preach
                   name="content"
                   render={({ field }) => (
                     <FormItem>
+                      <FormLabel>Sermon content</FormLabel>
                       <FormControl>
                         <textarea
                           className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -319,18 +416,68 @@ export default function EditMode({date,topic,youtubeId,content,references,preach
 
                 {/* Champ : Références */}
                 <FormField
-                  control={form.control}
-                  name="references"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Biblical references</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter biblical references (ex: John 3:16, Luke 1:13)" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            control={form.control}
+            name="references"
+            render={() => (
+              <FormItem>
+                <FormLabel>Biblical references</FormLabel>
+                <FormControl>
+                  <div className="space-y-2">
+                  <div className="flex flex-wrap gap-2 mt-2">
+                      {selectedReferences.map((reference, index) => (
+                        <Badge key={index} variant="secondary" className="px-3 py-1 cursor-pointer underline" onClick={() => handleReferencesClick(reference)}>
+                          {reference}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-4 w-4 p-0 ml-1"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              removeReference(reference)}}
+                          >
+                            <X className="h-3 w-3" />
+                            <span className="sr-only">Supprimer</span>
+                          </Button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex">
+                      <Command className="rounded-lg border shadow-sm w-full">
+                        <CommandInput
+                          placeholder="Entrez des références (ex: Jean 3:16, Luc 1:13)"
+                          value={referencesInputValue}
+                          onValueChange={setReferencesInputValue}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault()
+                              addReference()
+                            }
+                          }}
+                        />
+                        <CommandList className="max-h-40">
+                          <CommandGroup heading="Suggestions">
+                            {filteredBooks.slice(0, 5).map((book, index) => (
+                              <CommandItem key={index} onSelect={() => addBookToInput(book)} className="cursor-pointer">
+                                {book}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                      <Button type="button" onClick={addReference} className="ml-2">
+                        Ajouter
+                      </Button>
+                    </div>
+
+                    {/* Affichage des références sélectionnées */}
+                    
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
                 {/* Bouton de soumission */}
                 <Button type="submit" disabled={updateNoteMutation.isPending}>
@@ -339,6 +486,7 @@ export default function EditMode({date,topic,youtubeId,content,references,preach
                 </Button>
               </form>
             </Form>
+            <BibleDialog open={open} passage={passage} setOpen={setOpen} />
           </>
   )
 }

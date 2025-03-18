@@ -3,17 +3,19 @@ import {    ArrowLeft } from "lucide-react"
 import axios from "axios"
 import {  useQuery } from "@tanstack/react-query"
 import ViewMode from "@/components/view-mode"
-import EditMode from "@/components/edit-mode"
+import EditMode from "@/components/edit-mode-form"
 import { useUserStore } from "@/stores/app-store"
 import Error from "@/components/error"
 import NotFound from "@/components/not-found"
 import Loader from "@/components/loader"
+import { apiBaseUrl } from "@/lib/utils"
 
 
 
 
 const fetchNoteDetails = async (noteId?:string) => {
-  const response = await axios.get(`https://localhost:3000/api/notes/${noteId}`,{
+  if(!noteId) return null
+  const response = await axios.get(`${apiBaseUrl}/notes/${noteId}`,{
     withCredentials:true
   }); 
   return response.data;

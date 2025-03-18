@@ -4,6 +4,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import useFetchVideo from "@/hooks/use-fetch-youtube-video-info"
 import { useNavigate } from "react-router"
 import { useUserStore } from "@/stores/app-store"
+import axios from "axios"
+import { apiBaseUrl } from "@/lib/utils"
+import { toast } from "@/hooks/use-toast"
+import { RefetchOptions, QueryObserverResult } from "@tanstack/react-query"
 
 
 interface NoteProps {
@@ -15,6 +19,7 @@ interface NoteProps {
   content: string
   references: string[],
   youtubeId:string | null
+  refetch:(options?: RefetchOptions) => Promise<QueryObserverResult<any, Error>>
 }
 
 function YouTubeThumbnail({ youtubeId }: { youtubeId: string | null}) {
@@ -70,29 +75,42 @@ function YouTubeThumbnail({ youtubeId }: { youtubeId: string | null}) {
 }
 
 
-export default function NoteCard({ id, topic, preacher, date, color, content, references ,youtubeId}:NoteProps) {
+export default function NoteCard({ id, topic, preacher, date, color, content, references ,youtubeId,refetch}:NoteProps) {
 
 const {setMode} = useUserStore()
 
-  const formattedDate = new Date(date).toLocaleDateString("en-US", {
+  const formattedDate = new Date(date).toLocaleDateString("fr-FR", {
     year: "numeric",
     month: "short",
     day: "numeric",
   })
 
   const navigate = useNavigate()
-  const handleEdit = (event:React.MouseEvent<HTMLDivElement>,noteId?:string) => {
+  const handleEdit = (event:React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault()
     event.stopPropagation()
     setMode('edit')
-    navigate(`/notes/${noteId}`)
+    navigate(`/notes/${id}`)
   }
 
-  const handleDelete = (event:React.MouseEvent<HTMLDivElement>) => {
+  const handleDelete = async (event:React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault()
     event.stopPropagation()
-    console.log(`Delete note ${id}`)
-    // Add your delete logic here
+    await axios.delete(`${apiBaseUrl}/notes/${id}`,{
+      withCredentials:true
+    }).then(() => {
+      refetch()
+      toast({
+        description:"Note deleted successfuly",
+        variant:"success"
+      })
+    }).catch((e) => {
+      console.log(e); 
+      toast({
+        description:"an Error occured while deleting note",
+        variant:"error"
+      })
+    })
   }
 
   return (
@@ -108,7 +126,7 @@ const {setMode} = useUserStore()
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={(event) => handleEdit(event,id)}>
+            <DropdownMenuItem onClick={(event) => handleEdit(event)}>
               <Edit className="mr-2 h-4 w-4" />
               <span>Edit</span>
             </DropdownMenuItem>

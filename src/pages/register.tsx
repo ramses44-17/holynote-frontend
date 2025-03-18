@@ -24,6 +24,7 @@ import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { apiBaseUrl } from "@/lib/utils";
 
 
 const registerSchema = z
@@ -69,7 +70,7 @@ export default function Register() {
   const registerMutation = useMutation({
     mutationFn: async (data: z.infer<typeof registerSchema>) => {
       const response = await axios.post(
-        "https://localhost:3000/api/users/register",
+        `${apiBaseUrl}/users/register`,
         data
       );
       return response.data;

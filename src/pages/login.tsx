@@ -25,6 +25,7 @@ import axios, { AxiosError } from "axios";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
+import { apiBaseUrl } from "@/lib/utils";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -44,7 +45,7 @@ export default function Register() {
   const loginMutation = useMutation({
     mutationFn: async (data: z.infer<typeof loginSchema>) => {
       const response = await axios.post(
-        "https://localhost:3000/api/users/login",
+        `${apiBaseUrl}/users/login`,
         data,
         {
           withCredentials: true,

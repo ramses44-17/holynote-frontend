@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth"
 import axios from "axios"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "@/hooks/use-toast"
+import { apiBaseUrl } from "@/lib/utils"
 
 
 export type Mode = "view" | "search"
@@ -25,7 +26,7 @@ interface HeaderProps {
 const useLogout = () => {
   return useMutation({
     mutationFn:async () => {
-      return axios.post("https://localhost:3000/api/users/logout", {}, { withCredentials: true });
+      return axios.post(`${apiBaseUrl}/users/logout`, {}, { withCredentials: true });
     },
     onSuccess: () => { 
       window.location.reload()
