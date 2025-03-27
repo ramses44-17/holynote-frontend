@@ -2,13 +2,13 @@ import { Search, X } from "lucide-react"
 import { Input } from "./ui/input"
 import { Button } from "./ui/button"
 import { Dispatch, SetStateAction, useEffect, useState } from "react"
-import { Mode } from "./header"
+import { MainMode } from "./header"
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs"
 
 
 
 interface SearchBarProps {
-  setMode:Dispatch<SetStateAction<Mode>>
+  setMode:Dispatch<SetStateAction<MainMode>>
   searchTerm:string
   setSearchTerm:Dispatch<SetStateAction<string>>
   filterBy:string

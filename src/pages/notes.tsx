@@ -64,7 +64,16 @@ if (isError) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   <NewNoteCard 
                       />
-                  {notes.map((note) => (
+                  {notes.map((note:{
+  id: number;
+  topic: string;
+  preacher: string;
+  date: string;
+  contentText: string;
+  biblicalReferences: string[];
+  youtubeUrl: string;
+}
+) => (
                     <Link
                       to={`/notes/${note.id}`}
                       key={note.id}
@@ -74,7 +83,7 @@ if (isError) {
                         id={note.id.toString()}
                         topic={note.topic}
                         preacher={note.preacher}
-                        date={note.date}
+                        date={new Date(note.date)}
                         refetch={()=>refetch()}
                         content={note.contentText}
                         references={note.biblicalReferences}
