@@ -39,6 +39,8 @@ import BibleDialog from "./bible-dialog";
 import { Editor, JSONContent } from "@tiptap/react";
 import noteSchema from "@/schemas/note-schema";
 import RichTextEditorInput from "./rich-text-editor-input";
+import { useQueryClient } from "@tanstack/react-query";
+
 
 interface EditModeProps {
   date?: string;
@@ -50,7 +52,6 @@ interface EditModeProps {
   contentHTML?:string | null
   contentJSON?:JSONContent | null
   contentText?:string | null
-  refetch:() => void
 }
 
 export default function EditMode({
@@ -63,8 +64,10 @@ export default function EditMode({
   noteId,
   contentJSON,
   contentText,
-  refetch
 }: EditModeProps) {
+ 
+// À l'intérieur de votre composant
+const queryClient = useQueryClient();
   const [selectedReferences, setSelectedReferences] = useState<string[]>(
     references!
   );
@@ -79,12 +82,12 @@ export default function EditMode({
   const form = useForm<z.infer<typeof noteSchema>>({
     resolver: zodResolver(noteSchema),
     defaultValues: {
-      topic: topic || "",
-      preacher: preacher || "",
-      content: contentHTML || "",
-      date: date || "",
-      references: references?.join(",") || "",
-      youtubeUrl: youtubeUrl || "",
+      topic: topic || undefined,
+      preacher: preacher || undefined,
+      content: contentHTML || undefined,
+      date: date || undefined,
+      references: references?.join(",") || undefined,
+      youtubeUrl: youtubeUrl || undefined,
     },
   });
 
@@ -108,8 +111,11 @@ export default function EditMode({
       );
       return response.data;
     },
-    onSuccess: () => {
-      refetch()
+    onSuccess: (updatedNote) => {
+      queryClient.setQueryData(["note", noteId], updatedNote); // Mettre à jour le cache
+    queryClient.invalidateQueries({
+      queryKey:["note", noteId]
+    });
       setMode("view");
       toast({
         title: "Note updated successfuly",

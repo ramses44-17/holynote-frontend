@@ -28,7 +28,7 @@ export default function Note() {
  
   const noteId = useParams().noteId
   const navigate = useNavigate()
-  const { data: note, isLoading, isError,error,refetch } =  useQuery({
+  const { data: note, isLoading, isError,error } =  useQuery({
     queryKey: ["note",noteId], 
     queryFn: () =>  fetchNoteDetails(noteId),
   });
@@ -61,9 +61,6 @@ export default function Note() {
     }
    }
 
-const handleRefetch = ()=>{
-  refetch()
-}
    return (
     <div>
       <button
@@ -92,7 +89,6 @@ const handleRefetch = ()=>{
 
         {mode === "edit" && (
           <EditMode
-          refetch={handleRefetch}
           contentHTML={note?.contentHTML}
           date={note?.date}
           preacher={note?.preacher}

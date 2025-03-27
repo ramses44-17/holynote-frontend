@@ -86,7 +86,7 @@ export default function ViewMode({
       editable:false,
       editorProps: {
         attributes: {
-          class: "prose prose-gray dark:prose-invert max-w-none px-4 py-3 min-h-[300px] bg-zinc-800 text-gray-900",
+          class: "prose prose-gray dark:prose-invert max-w-none bg-gray-50 px-2 py-2 border-l border-black",
         },
       }, 
     });

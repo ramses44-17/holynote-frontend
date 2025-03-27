@@ -1,13 +1,10 @@
-import { Edit, Loader2, MoreVertical, Trash2, Youtube } from "lucide-react"
+import { Edit,  MoreVertical,  Youtube } from "lucide-react"
 import { Button } from "./ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import useFetchVideo from "@/hooks/use-fetch-youtube-video-info"
 import { useNavigate } from "react-router"
 import {useUserStore} from "@/stores/app-store"
-import { toast } from "@/hooks/use-toast"
-import axios from "axios"
-import { apiBaseUrl } from "@/lib/utils"
-import { useState } from "react"
+import ConfimDeleteModal from "./confirm-delete-modal"
 
 
 interface NoteProps {
@@ -78,7 +75,6 @@ export default function NoteCard({  id,topic, preacher, date, content, reference
 
 
   const {setMode} = useUserStore()
-  const [isDeleting, setIsDeleting] = useState(false);
 
   const formattedDate = new Date(date).toLocaleDateString("fr-FR", {
     year: "numeric",
@@ -88,36 +84,13 @@ export default function NoteCard({  id,topic, preacher, date, content, reference
 
   const navigate = useNavigate()
   const handleEdit = (event:React.MouseEvent<HTMLDivElement>) => {
-    if(isDeleting) return
     event.preventDefault()
     event.stopPropagation()
     setMode('edit')
     navigate(`/notes/${id}`)
   }
 
-  const handleDelete = async (event:React.MouseEvent<HTMLDivElement>) => {
-    if(isDeleting) return
-    event.preventDefault()
-    event.stopPropagation()
-    setIsDeleting(true);
-    await axios.delete(`${apiBaseUrl}/notes/${id}`,{
-      withCredentials:true
-    }).then(async() => {
-      refetch()
-      toast({
-        description:"Note deleted successfuly",
-        variant:"success"
-      })
-    }).catch((e) => {
-      console.log(e); 
-      toast({
-        description:"an Error occured while deleting note",
-        variant:"error"
-      })
-    }).finally(() => { 
-      setIsDeleting(false)
-     })
-  }
+  
 
 
   return (
@@ -137,9 +110,8 @@ export default function NoteCard({  id,topic, preacher, date, content, reference
               <Edit className="mr-2 h-4 w-4" />
               <span>Edit</span>
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={handleDelete}>
-              <Trash2 className="mr-2 h-4 w-4" />
-              <span>Delete</span>
+            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={(e)=>e.preventDefault()}>
+              <ConfimDeleteModal refetch={refetch} id={id}/>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -194,12 +166,6 @@ export default function NoteCard({  id,topic, preacher, date, content, reference
         )}
          <YouTubeThumbnail youtubeUrl={youtubeUrl} />
       </div>
-      {/* Overlay de chargement lors de la suppression */}
-      {isDeleting && (
-        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-          <Loader2 className="h-10 w-10 text-white animate-spin" />
-        </div>
-      )}
     </div>
   )
 }
