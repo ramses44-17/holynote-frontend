@@ -28,7 +28,7 @@ export default function Note() {
  
   const noteId = useParams().noteId
   const navigate = useNavigate()
-  const { data: note, isLoading, isError,refetch,error } =  useQuery({
+  const { data: note, isLoading, isError,error,refetch } =  useQuery({
     queryKey: ["note",noteId], 
     queryFn: () =>  fetchNoteDetails(noteId),
   });
@@ -61,9 +61,11 @@ export default function Note() {
     }
    }
 
-
+const handleRefetch = ()=>{
+  refetch()
+}
    return (
-    <div className="flex flex-col min-h-screen">
+    <div>
       <button
         className="flex items-center font-bold ml-4 mt-4 text-gray-600 hover:text-blue-500 transition-all duration-200 ease-in-out"
         onClick={handleBack}
@@ -71,17 +73,17 @@ export default function Note() {
         <ArrowLeft className="h-5 w-5 mr-2" />
         Back
       </button>
-      <div className="flex flex-1 px-4 flex-col py-4 max-w-4xl mx-auto w-full">
+      <div className="flex flex-1 px-4 flex-col w-full">
         <div className="bg-white p-6 mb-6">
           {
           mode === "view" && (
             <ViewMode
-            content={note?.content}
+            content={note?.contentHTML}
             date={note?.date}
             preacher={note?.preacher}
-            references={note?.references}
+            references={note?.biblicalReferences}
             topic={note?.topic}
-            youtubeId={note?.youtubeId}
+            youtubeUrl={note?.youtubeUrl}
              />
           )
 
@@ -90,15 +92,16 @@ export default function Note() {
 
         {mode === "edit" && (
           <EditMode
-          content={note?.content}
+          refetch={handleRefetch}
+          contentHTML={note?.contentHTML}
           date={note?.date}
           preacher={note?.preacher}
-          references={note?.references}
+          references={note?.biblicalReferences}
           topic={note?.topic}
-          youtubeId={note?.youtubeId}
-          color={note?.color}
+          youtubeUrl={note?.youtubeUrl}
           noteId={noteId}
-          refetch={refetch}
+          contentJSON={note?.contentJSON}
+          contentText={note?.contentText}
           />
         )}
       </div>

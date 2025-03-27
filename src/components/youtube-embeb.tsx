@@ -1,12 +1,17 @@
+import { extractYoutubeId } from "@/lib/utils"
 import type React from "react"
 
 interface YouTubeEmbedProps {
-  videoId?: string
+  youtubeUrl?: string
 }
 
-export const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({ videoId }) => {
+export const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({ youtubeUrl }) => {
 
-  if (!videoId) return null
+  if (!youtubeUrl) return null
+
+  const videoId = extractYoutubeId(youtubeUrl)
+
+  if(!videoId) return null
 
   return (
     <div className="relative w-full pt-[50%] rounded-lg overflow-hidden shadow-lg">

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import Header, { Mode } from "@/components/header"
+import Header, { MainMode } from "@/components/header"
 import NoteCard from "@/components/note-card"
 import { Link, Navigate } from "react-router"
 import axios from "axios"
@@ -27,15 +27,14 @@ const fetchNotes = async () => {
 export default function NotesPage() {
 
 
-const [mode,setMode] = useState<Mode>('view')
+const [mainMode,setMainMode] = useState<MainMode>('view')
 const [searchTerm,setSearchTerm] = useState<string>("")
 const [filterBy,setFilterBy] = useState<string>("all")
 const { data: notes, isLoading, isError,error,refetch } = useQuery({
   queryKey: ["notes"], 
   queryFn:fetchNotes
 });
-
-
+  
 //faire un bon loader
 if (isLoading) return <Loader/>;
 if (isError) {
@@ -47,12 +46,15 @@ if (isError) {
   return <Error/>;
 }
 
+
+
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      <Header filterBy={filterBy} searchTerm={searchTerm} setFilterBy={setFilterBy} setSearchTerm={setSearchTerm} mode={mode} setMode={setMode} />
+      <Header filterBy={filterBy} searchTerm={searchTerm} setFilterBy={setFilterBy} setSearchTerm={setSearchTerm} mode={mainMode} setMode={setMainMode} />
       <div className="container mx-auto px-4 py-8 flex-grow">
         {
-          mode === "view" ? (
+          mainMode === "view" ? (
             <>
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-foreground">Sermon Notes</h1>
@@ -69,15 +71,14 @@ if (isError) {
                       className="block h-full transition-opacity hover:opacity-95"
                     >
                       <NoteCard
-                      refetch={refetch}
                         id={note.id.toString()}
                         topic={note.topic}
                         preacher={note.preacher}
                         date={note.date}
-                        color={note.color}
-                        content={note.content}
-                        references={note.references}
-                        youtubeId={note.youtubeId}
+                        refetch={()=>refetch()}
+                        content={note.contentText}
+                        references={note.biblicalReferences}
+                        youtubeUrl={note.youtubeUrl}
                       />
                     </Link>
                   ))}

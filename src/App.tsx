@@ -12,7 +12,6 @@ import NotFound from "./components/not-found";
 import AddNotePage from "./pages/add-note-page";
 
 function App() {
-
   return (
       <Router>
          <AuthProvider>
@@ -63,3 +62,4 @@ function App() {
 }
 
 export default App;
+

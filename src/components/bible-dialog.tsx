@@ -65,6 +65,7 @@ export default function BibleDialog({ open, setOpen, passage }: BibleDialogProps
     queryFn: () => fetchPassage(passageId),
     enabled: !!passageId,
     staleTime: 1000 * 60 * 5,
+    retry:false
   });
   
 

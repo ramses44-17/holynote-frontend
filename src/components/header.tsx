@@ -12,11 +12,11 @@ import { toast } from "@/hooks/use-toast"
 import { apiBaseUrl } from "@/lib/utils"
 
 
-export type Mode = "view" | "search"
+export type MainMode = "view" | "search"
 
 interface HeaderProps {
-  mode:Mode;
-  setMode:Dispatch<SetStateAction<Mode>>
+  mode:MainMode;
+  setMode:Dispatch<SetStateAction<MainMode>>
   searchTerm:string
   setSearchTerm:Dispatch<SetStateAction<string>>
   filterBy:string

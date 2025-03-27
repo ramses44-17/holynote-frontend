@@ -1,34 +1,33 @@
-import { Edit, MoreVertical, Trash2, Youtube } from "lucide-react"
+import { Edit, Loader2, MoreVertical, Trash2, Youtube } from "lucide-react"
 import { Button } from "./ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import useFetchVideo from "@/hooks/use-fetch-youtube-video-info"
 import { useNavigate } from "react-router"
-import { useUserStore } from "@/stores/app-store"
+import {useUserStore} from "@/stores/app-store"
+import { toast } from "@/hooks/use-toast"
 import axios from "axios"
 import { apiBaseUrl } from "@/lib/utils"
-import { toast } from "@/hooks/use-toast"
-import { RefetchOptions, QueryObserverResult } from "@tanstack/react-query"
+import { useState } from "react"
 
 
 interface NoteProps {
   id: string
   topic: string
   preacher: string
-  date: Date
-  color: string | "red" | "blue" | "violet" | "amber" | "orange" 
-  content: string
+  date: Date 
+  content: string | null
   references: string[],
-  youtubeId:string | null
-  refetch:(options?: RefetchOptions) => Promise<QueryObserverResult<any, Error>>
+  youtubeUrl:string | null
+  refetch : () => void
 }
 
-function YouTubeThumbnail({ youtubeId }: { youtubeId: string | null}) {
+function YouTubeThumbnail({  youtubeUrl }: { youtubeUrl: string | null}) {
 
 
 
-  const { data, isLoading, isError } = useFetchVideo(youtubeId);
+  const { data, isLoading, isError } = useFetchVideo(youtubeUrl);
 
-  if (!youtubeId) return null;
+  if (!youtubeUrl) return null;
 
 
   return (
@@ -75,9 +74,11 @@ function YouTubeThumbnail({ youtubeId }: { youtubeId: string | null}) {
 }
 
 
-export default function NoteCard({ id, topic, preacher, date, color, content, references ,youtubeId,refetch}:NoteProps) {
+export default function NoteCard({  id,topic, preacher, date, content, references ,youtubeUrl,refetch}:NoteProps) {
 
-const {setMode} = useUserStore()
+
+  const {setMode} = useUserStore()
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const formattedDate = new Date(date).toLocaleDateString("fr-FR", {
     year: "numeric",
@@ -87,6 +88,7 @@ const {setMode} = useUserStore()
 
   const navigate = useNavigate()
   const handleEdit = (event:React.MouseEvent<HTMLDivElement>) => {
+    if(isDeleting) return
     event.preventDefault()
     event.stopPropagation()
     setMode('edit')
@@ -94,11 +96,13 @@ const {setMode} = useUserStore()
   }
 
   const handleDelete = async (event:React.MouseEvent<HTMLDivElement>) => {
+    if(isDeleting) return
     event.preventDefault()
     event.stopPropagation()
+    setIsDeleting(true);
     await axios.delete(`${apiBaseUrl}/notes/${id}`,{
       withCredentials:true
-    }).then(() => {
+    }).then(async() => {
       refetch()
       toast({
         description:"Note deleted successfuly",
@@ -110,12 +114,15 @@ const {setMode} = useUserStore()
         description:"an Error occured while deleting note",
         variant:"error"
       })
-    })
+    }).finally(() => { 
+      setIsDeleting(false)
+     })
   }
+
 
   return (
     <div className="group relative flex flex-col h-full rounded-xl overflow-hidden border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
-      <div className="absolute top-0 left-0 w-full h-1.5" style={{ backgroundColor: color }} />
+      <div className="absolute top-0 left-0 w-full h-1.5" style={{ backgroundColor: "red" }} />
 
       {/* More Options Dropdown - Now always visible */}
       <div className="absolute top-2 right-2 z-10">
@@ -126,7 +133,7 @@ const {setMode} = useUserStore()
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={(event) => handleEdit(event)}>
+            <DropdownMenuItem onClick={handleEdit}>
               <Edit className="mr-2 h-4 w-4" />
               <span>Edit</span>
             </DropdownMenuItem>
@@ -165,7 +172,6 @@ const {setMode} = useUserStore()
                 </span>
               ))
             ) : (
-              // Show first 2 references and a count for the rest if there are more than 3
               <>
                 {references.slice(0, 2).map((ref, index) => (
                   <span
@@ -186,8 +192,14 @@ const {setMode} = useUserStore()
             <span className="text-xs text-muted-foreground">No references</span>
           </div>
         )}
-         <YouTubeThumbnail youtubeId={youtubeId} />
+         <YouTubeThumbnail youtubeUrl={youtubeUrl} />
       </div>
+      {/* Overlay de chargement lors de la suppression */}
+      {isDeleting && (
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+          <Loader2 className="h-10 w-10 text-white animate-spin" />
+        </div>
+      )}
     </div>
   )
 }

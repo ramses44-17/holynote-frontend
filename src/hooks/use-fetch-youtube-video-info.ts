@@ -1,12 +1,13 @@
+import { extractYoutubeId } from "@/lib/utils";
 import {useQuery} from "@tanstack/react-query"
 import axios from "axios"
 
 const YOUTUBE_API_KEY = import.meta.env.VITE_GOOGLE_KEY
 
 
-const fetchVideoInfo = async (videoId:string) => 
+const fetchVideoInfo = async (videoUrl:string) => 
   {
-    
+    const videoId = extractYoutubeId(videoUrl)
   const { data } = await axios.get(
     `https://www.googleapis.com/youtube/v3/videos`,
     {
@@ -25,11 +26,11 @@ const fetchVideoInfo = async (videoId:string) =>
   return data.items[0].snippet; // Retourne seulement le snippet
 };
 
-const useFetchVideo = (videoId:string | null) => {
+const useFetchVideo = (videoUrl:string | null) => {
   return useQuery({
-    queryKey: ["video", videoId], // Cache les données sous cette clé
-    queryFn: () => fetchVideoInfo(videoId!),
-    enabled: !!videoId, // Ne lance pas la requête si videoId est vide
+    queryKey: ["video", videoUrl], // Cache les données sous cette clé
+    queryFn: () => fetchVideoInfo(videoUrl!),
+    enabled: !!videoUrl, // Ne lance pas la requête si videoId est vide
     staleTime: 1000 * 60 * 5, // Cache les résultats pendant 5 minutes
   });
 };

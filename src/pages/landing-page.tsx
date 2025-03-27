@@ -1,6 +1,6 @@
 import { Link} from "react-router"; // 
 import { Button } from "@/components/ui/button";
-import { Notebook, Search } from "lucide-react";
+import { BookOpen, Notebook, Search } from "lucide-react";
 import { JSX } from "react";
 
 
@@ -45,6 +45,11 @@ export default function LandingPage() {
                 icon={<Search className="w-12 h-12 mb-4" />}
                 title="Powerful Search"
                 description="Find your notes quickly and easily with a keyword search."
+              />
+              <FeatureCard
+                icon={<BookOpen className="w-12 h-12 mb-4" />}
+                title="Biblical integration"
+                description="Read your sermon biblical passage directly without leave application"
               />
             </div>
           </div>
