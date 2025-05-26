@@ -306,7 +306,7 @@ export default function EditorMenuBar({editor}:{editor:Editor | null}) {
   ]
   
   return (
-    <div className="border rounded-md p-1 space-x-2 z-50 bg-red-400">
+    <div className="border rounded-md p-1 flex justify-center flex-wrap bg-gray-200 z-50">
       {
         options.map((option,index) => {
           return option.popover ? <div key={index} className="inline">

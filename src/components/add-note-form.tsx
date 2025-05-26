@@ -248,15 +248,12 @@ export default function AddNoteForm() {
     addNoteMutation.mutate(finalValues);
   }
   
-  return (
+  return ( 
     <>
-      <Card className="w-full bg-gray-100 p-6 rounded-none shadow-none border-none">
-  <CardContent className="space-y-5">
-    <CardTitle className="text-center text-xl">
-      Create new sermon note
-    </CardTitle>
+      <Card className="w-full bg-gray-100 pt-4 rounded-none shadow-none border-none">
+  <CardContent>
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)}>
         {/* Champ : Sujet */}
         <FormField
           control={form.control}
@@ -267,7 +264,9 @@ export default function AddNoteForm() {
                 <Input
                   placeholder="Enter topic"
                   {...field}
-                  className="bg-gray-200 p-3 rounded-md border-none shadow-none focus:outline-none focus:bg-gray-300 sm:text-xl sm:font-bold text-lg font-bold"
+                  className="bg-gray-200 p-3 border-none shadow-none focus:outline-none 
+                  font-semibold
+                 md:text-xl md:font-bold"
                 />
               </FormControl>
               <FormMessage />
@@ -286,7 +285,7 @@ export default function AddNoteForm() {
                   placeholder="Enter preacher's name"
                   {...field}
                   required
-                  className="bg-gray-200 p-3 rounded-md border-none shadow-none focus:outline-none focus:bg-gray-300"
+                  className="bg-gray-200 p-3 border-none shadow-none focus:outline-none"
                 />
               </FormControl>
               <FormMessage />
@@ -303,9 +302,11 @@ export default function AddNoteForm() {
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
-                    <Button className="w-full bg-gray-200 text-left p-3 rounded-md border-none shadow-none focus:outline-none focus:bg-gray-300 hover:bg-gray-300 text-black">
+                    <Button className="w-full bg-gray-200 text-left p-3 border-none 
+                    hover:bg-none
+                    shadow-none focus:outline-none  text-black">
                       <CalendarIcon className="mr-2 h-4 w-4 text-black" />
-                      {field.value ? format(new Date(field.value), "PPP") : "Sermon Date"}
+                      {field.value ? format(new Date(field.value), "PPP") : "Click to enter Sermon Date"}
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
@@ -333,7 +334,7 @@ export default function AddNoteForm() {
                 <Input
                   placeholder="Enter YouTube URL"
                   {...field}
-                  className="bg-gray-200 p-3 rounded-md border-none shadow-none focus:outline-none focus:bg-gray-300"
+                  className="bg-gray-200 p-3 border-none shadow-none focus:outline-none"
                 />
               </FormControl>
               <FormMessage />
@@ -368,7 +369,7 @@ export default function AddNoteForm() {
             <FormItem>
               <FormControl>
                 <div className="space-y-2">
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 m-0">
                     {selectedReferences.map((reference, index) => (
                       <Badge key={index} variant="secondary" className="px-3 py-1 cursor-pointer bg-primary text-white underline" onClick={()=> handleReferencesClick(reference)}>
                         {reference}
@@ -386,7 +387,7 @@ export default function AddNoteForm() {
                     ))}
                   </div>
                   <div className="flex">
-                    <Command className="rounded-md border-none shadow-none w-full bg-gray-200">
+                    <Command className="rounded-none border-none shadow-none w-full bg-gray-200">
                       <CommandInput
                         placeholder="Enter biblical references (e.g., John 3:16, Luke 1:13)"
                         value={referencesInputValue}
@@ -397,7 +398,7 @@ export default function AddNoteForm() {
                             addReference();
                           }
                         }}
-                        className="bg-gray-200 p-3 rounded-md border-none shadow-none focus:outline-none focus:bg-gray-300"
+                        className="bg-gray-200 rounded-none border-none shadow-none focus:outline-none "
                       />
                       <CommandList className="max-h-40">
                         <CommandGroup heading="Suggestions">
@@ -409,7 +410,7 @@ export default function AddNoteForm() {
                         </CommandGroup>
                       </CommandList>
                     </Command>
-                    <Button type="button" onClick={addReference} className="ml-2 bg-primary text-white">
+                    <Button type="button" onClick={addReference} className="ml-2 text-white">
                       Add passage
                     </Button>
                   </div>
@@ -421,7 +422,7 @@ export default function AddNoteForm() {
         />
 
         {/* Bouton de soumission */}
-        <Button type="submit" className="w-full bg-primary text-white p-3 rounded-md" disabled={addNoteMutation.isPending}>
+        <Button type="submit" className="w-full p-3 rounded-md" disabled={addNoteMutation.isPending}>
           {addNoteMutation.isPending ? "Creating..." : "Create"}
         </Button>
       </form>
