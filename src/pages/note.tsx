@@ -71,7 +71,7 @@ export default function Note() {
         Back
       </button>
       <div className="flex flex-1 px-4 flex-col w-full">
-        <div className="bg-white p-6 mb-6">
+        <div className="p-6 mb-6">
           {
           mode === "view" && (
             <ViewMode

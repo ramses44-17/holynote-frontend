@@ -7,6 +7,7 @@ import { Color } from "@tiptap/extension-color";
 import TextStyle from "@tiptap/extension-text-style";
 import EditorMenuBar from "./editor-menu-bar";
 import Heading from "@tiptap/extension-heading"
+import Placeholder from "@tiptap/extension-placeholder"
 
 // Définition des extensions TipTap
 const extensions = [
@@ -18,6 +19,19 @@ const extensions = [
       HTMLAttributes: { class: "list-disc ml-3" },
     },
   }),
+  Placeholder.configure({
+        // Use a placeholder:
+        placeholder: 'Write something …',
+        showOnlyWhenEditable:true
+        // Use different placeholders depending on the node type:
+        // placeholder: ({ node }) => {
+        //   if (node.type.name === 'heading') {
+        //     return 'What’s the title?'
+        //   }
+
+        //   return 'Can you add some further context?'
+        // },
+      }),
   Heading.extend({
     levels: [1, 2],
     renderHTML({ node, HTMLAttributes }) {
@@ -52,7 +66,7 @@ export default function RichTextEditorInput({ content, onUpdate }: { content?: s
     content: content,
     editorProps: {
       attributes: {
-        class: "px-3 py-2 border rounded-md min-h-[300px] bg-black p-3 rounded-md border-none shadow-none text-white",
+        class: "py-2 rounded-none min-h-[300px] text-blue-500 p-3 border-none shadow-none text-white min-w-full bg-gray-200 ",
       },
     },
     onUpdate: ({ editor }) => onUpdate(editor) 
@@ -62,10 +76,10 @@ export default function RichTextEditorInput({ content, onUpdate }: { content?: s
 
 
   return (
-        <>
+        <div >
           <EditorMenuBar editor={editor} />
-          <EditorContent editor={editor} placeholder="Enter sermon note text"/>
-        </>
+          <EditorContent editor={editor} />
+        </div>
   )
 }
 

@@ -13,9 +13,9 @@ const navigate = useNavigate()
   
 
   return (
-    <div className="bg-gray-100 min-h-screen border">
+    <div className="bg-gray-100 min-h-screen">
       <button
-        className="flex items-center font-bold ml-4 mt-4 text-gray-600 hover:text-blue-500 transition-all duration-200 ease-in-out self-start"
+        className="flex items-center font-bold ml-4 mt-4 text-gray-600 hover:text-blue-500 transition-all duration-200 ease-in-out"
         onClick={handleBack}
       >
         <ArrowLeft className="h-5 w-5 mr-2" />

@@ -86,7 +86,7 @@ export default function ViewMode({
       editable:false,
       editorProps: {
         attributes: {
-          class: "prose prose-gray dark:prose-invert max-w-none bg-gray-50 px-2 py-2 border-l border-black",
+          class: "prose prose-gray dark:prose-invert max-w-none bg-gray-50 px-2 py-2 border-black w-full",
         },
       }, 
     });
@@ -128,7 +128,7 @@ export default function ViewMode({
         </div>
       )}
 
-      <div className="my-10">
+      <div className="my-10 w-full">
         {content ? (
           <EditorContent editor={editor}/>
         ) : (

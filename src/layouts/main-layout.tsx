@@ -5,8 +5,6 @@ import { Outlet } from "react-router"
 import Error from "@/components/error";
 
 
-
-
 export default function MainLayout() {
  const {isError,error} = useAuth();
 
