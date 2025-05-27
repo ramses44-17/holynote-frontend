@@ -12,7 +12,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
-import { CardContent, Card, CardTitle } from "@/components/ui/card";
+import { CardContent, Card} from "@/components/ui/card";
 import { YouTubeEmbed } from "@/components/youtube-embeb";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -303,7 +303,7 @@ export default function AddNoteForm() {
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button className="w-full bg-gray-200 text-left p-3 border-none 
-                    hover:bg-none
+                    hover:bg-gray-200
                     shadow-none focus:outline-none  text-black">
                       <CalendarIcon className="mr-2 h-4 w-4 text-black" />
                       {field.value ? format(new Date(field.value), "PPP") : "Click to enter Sermon Date"}

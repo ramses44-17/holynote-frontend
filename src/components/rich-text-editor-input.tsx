@@ -22,6 +22,7 @@ const extensions = [
   Placeholder.configure({
         // Use a placeholder:
         placeholder: 'Write something …',
+        showOnlyWhenEditable:true
         // Use different placeholders depending on the node type:
         // placeholder: ({ node }) => {
         //   if (node.type.name === 'heading') {

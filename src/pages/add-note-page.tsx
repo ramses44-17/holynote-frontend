@@ -1,5 +1,4 @@
 import AddNoteForm from "@/components/add-note-form";
-import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import {  useNavigate } from "react-router";
 
@@ -15,13 +14,13 @@ const navigate = useNavigate()
 
   return (
     <div className="bg-gray-100 min-h-screen">
-      <Button
+      <button
+        className="flex items-center font-bold ml-4 mt-4 text-gray-600 hover:text-blue-500 transition-all duration-200 ease-in-out"
         onClick={handleBack}
-        variant="ghost"
       >
         <ArrowLeft className="h-5 w-5 mr-2" />
         Back
-      </Button>
+      </button>
     <AddNoteForm/>
     </div>
   );
