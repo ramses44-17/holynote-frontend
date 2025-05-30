@@ -337,7 +337,7 @@ const handleReferencesClick = (passage: string) => {
                   <Input
                     placeholder="Enter topic"
                     {...field}
-                    className="text-4xl font-bold"
+                    className="md:text-3xl lg:text-4xl  text-2xl font-bold text-balance"
                   />
                 </FormControl>
                 <FormMessage />
@@ -352,7 +352,7 @@ const handleReferencesClick = (passage: string) => {
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input placeholder="Enter preacher's name" {...field} />
+                  <Input placeholder="Enter preacher's name" {...field}  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

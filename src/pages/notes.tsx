@@ -50,7 +50,7 @@ if (isError) {
 
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen">
       <Header filterBy={filterBy} searchTerm={searchTerm} setFilterBy={setFilterBy} setSearchTerm={setSearchTerm} mode={mainMode} setMode={setMainMode} />
       <div className="container mx-auto px-4 py-8 flex-grow">
         {

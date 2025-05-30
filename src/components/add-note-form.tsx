@@ -12,7 +12,6 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
-import { CardContent, Card} from "@/components/ui/card";
 import { YouTubeEmbed } from "@/components/youtube-embeb";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,7 +32,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-import { CalendarIcon, X } from "lucide-react";
+import { CalendarIcon, Save, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
@@ -250,185 +249,205 @@ export default function AddNoteForm() {
   
   return ( 
     <>
-      <Card className="w-full bg-gray-100 pt-4 rounded-none shadow-none border-none">
-  <CardContent>
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        {/* Champ : Sujet */}
-        <FormField
-          control={form.control}
-          name="topic"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Input
-                  placeholder="Enter topic"
-                  {...field}
-                  className="bg-gray-200 p-3 border-none shadow-none focus:outline-none 
-                  font-semibold
-                 md:text-xl md:font-bold"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Champ : Nom du prédicateur */}
-        <FormField
-          control={form.control}
-          name="preacher"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Input
-                  placeholder="Enter preacher's name"
-                  {...field}
-                  required
-                  className="bg-gray-200 p-3 border-none shadow-none focus:outline-none"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Champ : Date */}
-        <FormField
-          control={form.control}
-          name="date"
-          render={({ field }) => (
-            <FormItem className="flex flex-col w-full">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button className="w-full bg-gray-200 text-left p-3 border-none 
-                    hover:bg-gray-200
-                    shadow-none focus:outline-none  text-black">
-                      <CalendarIcon className="mr-2 h-4 w-4 text-black" />
-                      {field.value ? format(new Date(field.value), "PPP") : "Click to enter Sermon Date"}
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value ? new Date(field.value) : undefined}
-                    onSelect={(date) => field.onChange(format(new Date(date!), "yyyy-MM-dd"))}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Champ : YouTube URL */}
-        <FormField
-          control={form.control}
-          name="youtubeUrl"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Input
-                  placeholder="Enter YouTube URL"
-                  {...field}
-                  className="bg-gray-200 p-3 border-none shadow-none focus:outline-none"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {youtubeUrl && <YouTubeEmbed youtubeUrl={youtubeUrl} />}
-
-        {/* Champ : Contenu */}
-        <FormField
-          control={form.control}
-          name="content"
-          render={() => (
-            <FormItem>
-              <FormControl>
-                <RichTextEditorInput
-                  onUpdate={handleEditorChange}
-                  content={content}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Champ : Références */}
-        <FormField
-          control={form.control}
-          name="references"
-          render={() => (
-            <FormItem>
-              <FormControl>
-                <div className="space-y-2">
-                  <div className="flex flex-wrap gap-2 m-0">
-                    {selectedReferences.map((reference, index) => (
-                      <Badge key={index} variant="secondary" className="px-3 py-1 cursor-pointer bg-primary text-white underline" onClick={()=> handleReferencesClick(reference)}>
-                        {reference}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-4 w-4 p-0 ml-1"
-                          onClick={(e) => { e.stopPropagation(); removeReference(reference); }}
-                        >
-                          <X className="h-3 w-3" />
-                          <span className="sr-only">Remove</span>
-                        </Button>
-                      </Badge>
-                    ))}
-                  </div>
-                  <div className="flex">
-                    <Command className="rounded-none border-none shadow-none w-full bg-gray-200">
-                      <CommandInput
-                        placeholder="Enter biblical references (e.g., John 3:16, Luke 1:13)"
-                        value={referencesInputValue}
-                        onValueChange={setReferencesInputValue}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            addReference();
-                          }
-                        }}
-                        className="bg-gray-200 rounded-none border-none shadow-none focus:outline-none "
-                      />
-                      <CommandList className="max-h-40">
-                        <CommandGroup heading="Suggestions">
-                          {filteredBooks.slice(0, 5).map((book, index) => (
-                            <CommandItem key={index} onSelect={() => addBookToInput(book)} className="cursor-pointer">
-                              {book}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                    <Button type="button" onClick={addReference} className="ml-2 text-white">
-                      Add passage
-                    </Button>
-                  </div>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Bouton de soumission */}
-        <Button type="submit" className="w-full p-3 rounded-md" disabled={addNoteMutation.isPending}>
-          {addNoteMutation.isPending ? "Creating..." : "Create"}
-        </Button>
-      </form>
-    </Form>
-  </CardContent>
-</Card>
+   <Form {...form}>
+           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+             <FormField
+               control={form.control}
+               name="date"
+               render={({ field }) => (
+                 <FormItem className="flex flex-col w-full">
+                   <Popover>
+                     <PopoverTrigger asChild>
+                       <FormControl>
+                         <Button
+                           variant="outline"
+                           className={`w-[240px] justify-start text-left font-normal ${
+                             !field.value && "text-muted-foreground"
+                           }`}
+                         >
+                           <CalendarIcon className="mr-2 h-4 w-4" />
+                           {field.value ? (
+                             format(new Date(field.value), "PPP")
+                           ) : (
+                             <span>Choose a date</span>
+                           )}
+                         </Button>
+                       </FormControl>
+                     </PopoverTrigger>
+                     <PopoverContent className="w-auto p-0" align="start">
+                       <Calendar
+                         mode="single"
+                         selected={field.value ? new Date(field.value) : undefined}
+                         onSelect={(date) =>
+                           field.onChange(date ? format(date, "yyyy-MM-dd") : "")
+                         }
+                         initialFocus
+                       />
+                     </PopoverContent>
+                   </Popover>
+                   <FormMessage />
+                 </FormItem>
+               )}
+             />
+   
+             {/* Champ : Sujet */}
+             <FormField
+               control={form.control}
+               name="topic"
+               render={({ field }) => (
+                 <FormItem>
+                   <FormControl>
+                     <Input
+                       placeholder="Enter topic"
+                       {...field}
+                       className="md:text-3xl lg:text-4xl  text-2xl font-bold text-balance"
+                     />
+                   </FormControl>
+                   <FormMessage />
+                 </FormItem>
+               )}
+             />
+   
+             {/* Champ : Nom du prédicateur */}
+             <FormField
+               control={form.control}
+               name="preacher"
+               render={({ field }) => (
+                 <FormItem>
+                   <FormControl>
+                     <Input placeholder="Enter preacher's name" {...field}  />
+                   </FormControl>
+                   <FormMessage />
+                 </FormItem>
+               )}
+             />
+   
+             {/* YouTube Video Preview */}
+             <div className="mb-4">
+               {youtubeUrl && (
+                 <div className="flex">
+                   <YouTubeEmbed youtubeUrl={youtubeUrl} />
+                 </div>
+               )}
+   
+               <FormField
+                 control={form.control}
+                 name="youtubeUrl"
+                 render={({ field }) => (
+                   <FormItem className="relative">
+                     <FormControl>
+                       <Input
+                         placeholder="Enter YouTube URL (e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ)"
+                         {...field}
+                       />
+                     </FormControl>
+                     <FormMessage />
+                   </FormItem>
+                 )}
+               />
+             </div>
+   
+             {/* Champ : Contenu */}
+             <FormField
+               control={form.control}
+               name="content"
+               render={() => (
+                 <FormItem>
+                   <FormControl>
+                     <RichTextEditorInput
+                        onUpdate={handleEditorChange}
+                        content={content}
+                                     />
+                   </FormControl>
+                   <FormMessage />
+                 </FormItem>
+               )}
+             />
+   
+             {/* Champ : Références */}
+             <FormField
+               control={form.control}
+               name="references"
+               render={() => (
+                 <FormItem>
+                   <FormControl>
+                     <div className="space-y-2">
+                       <div className="flex flex-wrap gap-2 mt-2">
+                         {selectedReferences.map((reference, index) => (
+                           <Badge
+                             key={index}
+                             variant="secondary"
+                             className="px-3 py-1 cursor-pointer underline"
+                             onClick={() => handleReferencesClick(reference)}
+                           >
+                             {reference}
+                             <Button
+                               type="button"
+                               variant="ghost"
+                               size="sm"
+                               className="h-4 w-4 p-0 ml-1"
+                               onClick={(e) => {
+                                 e.stopPropagation();
+                                 removeReference(reference);
+                               }}
+                             >
+                               <X className="h-3 w-3" />
+                               <span className="sr-only">Supprimer</span>
+                             </Button>
+                           </Badge>
+                         ))}
+                       </div>
+                       <div className="flex">
+                         <Command className="rounded-lg border shadow-sm w-full">
+                           <CommandInput
+                             placeholder="Entrez des références (ex: Jean 3:16, Luc 1:13)"
+                             value={referencesInputValue}
+                             onValueChange={setReferencesInputValue}
+                             onKeyDown={(e) => {
+                               if (e.key === "Enter") {
+                                 e.preventDefault();
+                                 addReference();
+                               }
+                             }}
+                           />
+                           <CommandList className="max-h-40">
+                             <CommandGroup heading="Suggestions">
+                               {filteredBooks.slice(0, 5).map((book, index) => (
+                                 <CommandItem
+                                   key={index}
+                                   onSelect={() => addBookToInput(book)}
+                                   className="cursor-pointer"
+                                 >
+                                   {book}
+                                 </CommandItem>
+                               ))}
+                             </CommandGroup>
+                           </CommandList>
+                         </Command>
+                         <Button
+                           type="button"
+                           onClick={addReference}
+                           className="ml-2"
+                         >
+                           Ajouter
+                         </Button>
+                       </div>
+   
+                       {/* Affichage des références sélectionnées */}
+                     </div>
+                   </FormControl>
+                   <FormMessage />
+                 </FormItem>
+               )}
+             />
+   
+             {/* Bouton de soumission */}
+             <Button type="submit" disabled={addNoteMutation.isPending}>
+               <Save className="h-4 w-4 mr-2" />
+               {addNoteMutation.isPending ? "saving..." : "save"}
+             </Button>
+           </form>
+         </Form>
 
 
       <BibleDialog open={open} passage={passage} setOpen={setOpen} />

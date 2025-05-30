@@ -20,17 +20,7 @@ const extensions = [
     },
   }),
   Placeholder.configure({
-        // Use a placeholder:
         placeholder: 'Write something …',
-        showOnlyWhenEditable:true
-        // Use different placeholders depending on the node type:
-        // placeholder: ({ node }) => {
-        //   if (node.type.name === 'heading') {
-        //     return 'What’s the title?'
-        //   }
-
-        //   return 'Can you add some further context?'
-        // },
       }),
   Heading.extend({
     levels: [1, 2],
@@ -66,7 +56,7 @@ export default function RichTextEditorInput({ content, onUpdate }: { content?: s
     content: content,
     editorProps: {
       attributes: {
-        class: "py-2 rounded-none min-h-[300px] text-blue-500 p-3 border-none shadow-none text-white min-w-full bg-gray-200 ",
+        class: "py-2 rounded-none min-h-[300px] text-blue-500 p-3 shadow-none text-white min-w-full bg-gray-200 border-b-2 border-gray-300 ",
       },
     },
     onUpdate: ({ editor }) => onUpdate(editor) 

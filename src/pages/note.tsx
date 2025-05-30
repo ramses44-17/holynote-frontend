@@ -70,8 +70,8 @@ export default function Note() {
         <ArrowLeft className="h-5 w-5 mr-2" />
         Back
       </button>
-      <div className="flex flex-1 px-4 flex-col w-full">
-        <div className="p-6 mb-6">
+      <div className="md:px-24 px-4 py-4">
+        <div>
           {
           mode === "view" && (
             <ViewMode
