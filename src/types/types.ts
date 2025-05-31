@@ -19,5 +19,5 @@ export type NotesResponse = {
   notes: Note[];
   total: number;
   currentPage: number;
-  totalPage: number;
+  totalPages: number;
 };

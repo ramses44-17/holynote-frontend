@@ -22,7 +22,7 @@ const fetchNotes = async ({
     withCredentials: true,
     params: {
       page: pageParam,
-      searchTerm,
+      search:searchTerm,
     },
   });
   return response.data; // { notes, total, currentPage, totalPage }
@@ -52,7 +52,7 @@ export default function NotesPage() {
     queryFn: ({ pageParam = 1 }) =>
       fetchNotes({ pageParam:pageParam as number, searchTerm: debouncedSearchTerm }),
     getNextPageParam: (lastPage) => {
-      if (lastPage.currentPage < lastPage.totalPage) {
+      if (lastPage.currentPage < lastPage.totalPages) {
         return lastPage.currentPage + 1;
       }
       return undefined;
@@ -62,12 +62,12 @@ export default function NotesPage() {
   });
 
   const { sentinelRef, setObserver } = useIntersectionObserver(() => {
+    
     if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
   });
 
-  if (isLoading && !data) return <Loader />; // Initial load only
 
   if (isError) {
     if (axios.isAxiosError(error)) {
@@ -91,7 +91,7 @@ export default function NotesPage() {
 
       <div className="container mx-auto px-4 py-8 flex-grow">
         {mainMode === "view" && (
-          <>
+          isLoading && !data ? <Loader/>:<>
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-foreground">Sermon Notes</h1>
             </div>
@@ -135,7 +135,22 @@ export default function NotesPage() {
 
             {debouncedSearchTerm.trim() === "" ? (
               <div className="flex flex-col items-center justify-center py-16 text-gray-500">
-                <div className="text-6xl mb-4">🔍</div>
+                <div className="mb-4 text-gray-400">
+  <svg
+    className="w-16 h-16 animate-pulse"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z"
+    />
+  </svg>
+</div>
+
                 <p>Entrez un mot-clé pour commencer la recherche</p>
               </div>
             ) : notes.length > 0 ? (
@@ -182,7 +197,7 @@ export default function NotesPage() {
 
       {/* Fin de la liste */}
       {!hasNextPage && notes.length > 0 && (
-        <div className="py-4 text-center text-gray-400 italic">Fin de la liste</div>
+        <div className="py-4 text-center text-gray-400 italic">End</div>
       )}
     </div>
   );
