@@ -1,30 +1,30 @@
 import { Search, X } from "lucide-react"
 import { Input } from "./ui/input"
 import { Button } from "./ui/button"
-import { Dispatch, SetStateAction, useEffect, useState } from "react"
-import { Mode } from "./header"
-import { Tabs, TabsList, TabsTrigger } from "./ui/tabs"
+import { Dispatch, SetStateAction } from "react"
+import  {MainMode}  from "./header"
+// import { Tabs, TabsList, TabsTrigger } from "./ui/tabs"
 
 
 
 interface SearchBarProps {
-  setMode:Dispatch<SetStateAction<Mode>>
+  setMode:Dispatch<SetStateAction<MainMode>>
   searchTerm:string
   setSearchTerm:Dispatch<SetStateAction<string>>
-  filterBy:string
-  setFilterBy:Dispatch<SetStateAction<string>>
+  // filterBy:string
+  // setFilterBy:Dispatch<SetStateAction<string>>
 }
 
-export default function SearchBar({ setMode, searchTerm, setSearchTerm, filterBy, setFilterBy }:SearchBarProps) {
-  const [activeTab, setActiveTab] = useState(filterBy)
+export default function SearchBar({ setMode, searchTerm, setSearchTerm }:SearchBarProps) {
+  // const [activeTab, setActiveTab] = useState(filterBy)
 
   // Update the filter when tab changes
-  useEffect(() => {
-    setFilterBy(activeTab)
-  }, [activeTab, setFilterBy])
+  // useEffect(() => {
+  //   setFilterBy(activeTab)
+  // }, [activeTab, setFilterBy])
 
   return (
-    <header className="border-b bg-white text-black">
+    <header className="border-b bg-white text-black fixed w-full z-50">
       <div className="p-4 flex items-center gap-3">
         <Button
           variant="outline"
@@ -46,7 +46,7 @@ export default function SearchBar({ setMode, searchTerm, setSearchTerm, filterBy
         </div>
       </div>
 
-      <Tabs defaultValue={filterBy} value={activeTab} onValueChange={setActiveTab} className="w-full">
+      {/* <Tabs defaultValue={filterBy} value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="px-4 border-t">
           <TabsList className="w-full justify-start h-12 bg-transparent p-0 gap-4">
             <TabsTrigger
@@ -69,7 +69,7 @@ export default function SearchBar({ setMode, searchTerm, setSearchTerm, filterBy
             </TabsTrigger>
           </TabsList>
         </div>
-      </Tabs>
+      </Tabs> */}
     </header>
   )
 }

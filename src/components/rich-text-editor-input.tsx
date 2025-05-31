@@ -19,9 +19,6 @@ const extensions = [
       HTMLAttributes: { class: "list-disc ml-3" },
     },
   }),
-  Placeholder.configure({
-        placeholder: 'Write something …',
-      }),
   Heading.extend({
     levels: [1, 2],
     renderHTML({ node, HTMLAttributes }) {
@@ -46,6 +43,9 @@ const extensions = [
   TextStyle,
   Highlight.configure({ multicolor: true }),
   Color,
+   Placeholder.configure({
+        placeholder: 'Write something …',
+      }),
 ];
 
 
@@ -56,7 +56,7 @@ export default function RichTextEditorInput({ content, onUpdate }: { content?: s
     content: content,
     editorProps: {
       attributes: {
-        class: "py-2 rounded-none min-h-[300px] text-blue-500 p-3 shadow-none text-white min-w-full bg-gray-200 border-b-2 border-gray-300 ",
+        class: "py-2 rounded-none h-[400px] text-blue-500 p-3 shadow-none text-white min-w-full bg-gray-200 border-b-2 border-gray-300 overflow-y-scroll",
       },
     },
     onUpdate: ({ editor }) => onUpdate(editor) 
