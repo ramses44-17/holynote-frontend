@@ -1,15 +1,9 @@
 import { Search, X } from "lucide-react"
 import { Input } from "./ui/input"
 import { Button } from "./ui/button"
-<<<<<<< HEAD
-import { Dispatch, SetStateAction, useEffect, useState } from "react"
-import { MainMode } from "./header"
-import { Tabs, TabsList, TabsTrigger } from "./ui/tabs"
-=======
 import { Dispatch, SetStateAction } from "react"
 import  {MainMode}  from "./header"
 // import { Tabs, TabsList, TabsTrigger } from "./ui/tabs"
->>>>>>> main
 
 
 
