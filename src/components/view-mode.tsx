@@ -101,7 +101,7 @@ export default function ViewMode({
               ? format(date, "PPPP", { locale: enUS })
               : "Date non spécifiée"}
           </p>
-          <h1 className="text-4xl font-bold mt-2 text-gray-900 dark:text-gray-50 leading-tight">
+          <h1 className="md:text-3xl lg:text-4xl text-2xl font-bold mt-2 text-gray-900 dark:text-gray-50 leading-tight">
             {topic}
           </h1>
           <div className="flex items-center mt-3 text-sm text-gray-600 dark:text-gray-400">

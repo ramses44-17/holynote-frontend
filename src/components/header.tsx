@@ -19,8 +19,8 @@ interface HeaderProps {
   setMode:Dispatch<SetStateAction<MainMode>>
   searchTerm:string
   setSearchTerm:Dispatch<SetStateAction<string>>
-  filterBy:string
-  setFilterBy:Dispatch<SetStateAction<string>>
+  // filterBy:string
+  // setFilterBy:Dispatch<SetStateAction<string>>
 }
 
 const useLogout = () => {
@@ -41,14 +41,14 @@ const useLogout = () => {
   })
 };
 
-export default function Header({mode,setMode,searchTerm,setFilterBy,setSearchTerm,filterBy}:HeaderProps) {
+export default function Header({mode,setMode,searchTerm,setSearchTerm}:HeaderProps) {
   const { user } = useAuth()
   const { mutate: logout,isPending} = useLogout();
 
   
   
   return mode === "view" ? (
-    <header className="p-4 flex justify-between items-center border-b bg-white text-black">
+    <header className="p-4 flex justify-between items-center border-b bg-white text-black fixed w-full z-50">
       <Link to="/" className="flex items-center">
         <Pen className="-rotate-90" />
         <h1 className="text-xl font-semibold underline">
@@ -85,7 +85,7 @@ export default function Header({mode,setMode,searchTerm,setFilterBy,setSearchTer
         </div>
     </header>
   ) : (
-    <SearchBar filterBy={filterBy} setFilterBy={setFilterBy} searchTerm={searchTerm} setMode={setMode} setSearchTerm={setSearchTerm} />
+    <SearchBar  searchTerm={searchTerm} setMode={setMode} setSearchTerm={setSearchTerm} />
   )
 }
 

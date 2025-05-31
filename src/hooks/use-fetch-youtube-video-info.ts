@@ -26,7 +26,7 @@ const fetchVideoInfo = async (videoUrl:string) =>
   return data.items[0].snippet; // Retourne seulement le snippet
 };
 
-const useFetchVideo = (videoUrl:string | null) => {
+const useFetchVideo = (videoUrl?:string | null) => {
   return useQuery({
     queryKey: ["video", videoUrl], // Cache les données sous cette clé
     queryFn: () => fetchVideoInfo(videoUrl!),

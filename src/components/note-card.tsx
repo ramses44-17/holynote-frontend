@@ -12,13 +12,13 @@ interface NoteProps {
   topic: string
   preacher: string
   date: Date 
-  content: string | null
+  content?: string | null
   references: string[],
-  youtubeUrl:string | null
+  youtubeUrl?:string | null
   refetch : () => void
 }
 
-function YouTubeThumbnail({  youtubeUrl }: { youtubeUrl: string | null}) {
+function YouTubeThumbnail({  youtubeUrl }: { youtubeUrl?: string | null}) {
 
 
 
