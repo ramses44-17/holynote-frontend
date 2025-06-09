@@ -10,16 +10,22 @@ import NewNoteCard from "@/components/new-note-button";
 import { apiBaseUrl } from "@/lib/utils";
 import { useIntersectionObserver } from "@/hooks/use-intersect-observer";
 import { NotesResponse } from "@/types/types";
+import { useAuth } from "@/hooks/use-auth";
+import { useUserStore } from "@/stores/app-store";
 
 const fetchNotes = async ({
   pageParam = 1,
   searchTerm,
+  accessToken
 }: {
   pageParam?: number;
   searchTerm: string;
+  accessToken:string | null;
 }) => {
   const response = await axios.get(`${apiBaseUrl}/notes`, {
-    withCredentials: true,
+    headers: {
+      Authorization: `Bearer ${accessToken}`, // 👈 Ajout manuel ici
+    },
     params: {
       page: pageParam,
       search:searchTerm,
@@ -31,7 +37,7 @@ const fetchNotes = async ({
 export default function NotesPage() {
   const [mainMode, setMainMode] = useState<MainMode>("view");
   const [searchTerm, setSearchTerm] = useState<string>("");
-
+  const {accessToken} = useUserStore()
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearchTerm(searchTerm), 300);
@@ -50,7 +56,7 @@ export default function NotesPage() {
   } = useInfiniteQuery<NotesResponse, Error>({
     queryKey: ["notes", debouncedSearchTerm],
     queryFn: ({ pageParam = 1 }) =>
-      fetchNotes({ pageParam:pageParam as number, searchTerm: debouncedSearchTerm }),
+      fetchNotes({ pageParam:pageParam as number, searchTerm: debouncedSearchTerm,accessToken }),
     getNextPageParam: (lastPage) => {
       if (lastPage.currentPage < lastPage.totalPages) {
         return lastPage.currentPage + 1;
@@ -68,16 +74,35 @@ export default function NotesPage() {
     }
   });
 
+   const { data: status, isLoading:isRefreshLoading, isError:isRefreshError } = useAuth();
 
-  if (isError) {
-    if (axios.isAxiosError(error)) {
-      if (error.response?.status === 401) {
+ if (isError) {
+  if (axios.isAxiosError(error)) {
+    // Cas 401 : token expiré → tenter le refresh
+    if (error.response?.status === 401) {
+      if (isRefreshLoading) {
+        // On est en train de tenter un refresh
+        return <Loader />;
+      }
+
+      if (status === "success") {
+        // Refresh OK → on attend que useInfiniteQuery refetch automatiquement
+        return <Loader />;
+      }
+
+      if (status === "unauthorized" || isRefreshError) {
+        // Refresh KO → rediriger vers /auth
         return <Navigate to="/auth" />;
       }
+
+      // Autres cas (sécurité)
+      return <Error />;
     }
-    return <Error />;
   }
 
+  // Autres types d'erreurs
+  return <Error />;
+}
   const notes = data?.pages.flatMap((page) => page.notes) ?? [];
 
   return (

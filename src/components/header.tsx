@@ -5,11 +5,11 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Dispatch, SetStateAction } from "react"
 import SearchBar from "./search-bar"
-import { useAuth } from "@/hooks/use-auth"
 import axios from "axios"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "@/hooks/use-toast"
 import { apiBaseUrl } from "@/lib/utils"
+import { useUserStore } from "@/stores/app-store"
 
 
 export type MainMode = "view" | "search"
@@ -23,10 +23,12 @@ interface HeaderProps {
   // setFilterBy:Dispatch<SetStateAction<string>>
 }
 
-const useLogout = () => {
+const useLogout = (token:string | null) => {
   return useMutation({
     mutationFn:async () => {
-      return axios.post(`${apiBaseUrl}/users/logout`, {}, { withCredentials: true });
+      return axios.post(`${apiBaseUrl}/auth/logout`, {}, { withCredentials: true,headers: {
+      Authorization: `Bearer ${token}`, // 👈 Ajout manuel ici
+    }, });
     },
     onSuccess: () => { 
       window.location.reload()
@@ -42,8 +44,8 @@ const useLogout = () => {
 };
 
 export default function Header({mode,setMode,searchTerm,setSearchTerm}:HeaderProps) {
-  const { user } = useAuth()
-  const { mutate: logout,isPending} = useLogout();
+  const { user,accessToken } = useUserStore()
+  const { mutate: logout,isPending} = useLogout(accessToken);
 
   
   
@@ -76,10 +78,12 @@ export default function Header({mode,setMode,searchTerm,setSearchTerm}:HeaderPro
               <LogOut className="mr-2 h-4 w-4" />
               <span>{isPending ? "Logging out..." : "Logout"}</span>
             </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer" onClick={() => {}}>
+            <Link to="/settings">
+              <DropdownMenuItem className="cursor-pointer">
               <Settings className="mr-2 h-4 w-4" />
               <span>Settings</span>
             </DropdownMenuItem>
+              </Link>
           </DropdownMenuContent>
         </DropdownMenu>
         </div>

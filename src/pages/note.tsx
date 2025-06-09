@@ -9,43 +9,64 @@ import Error from "@/components/error"
 import NotFound from "@/components/not-found"
 import Loader from "@/components/loader"
 import { apiBaseUrl } from "@/lib/utils"
+import { useAuth } from "@/hooks/use-auth"
 
 
 
 
-const fetchNoteDetails = async (noteId?:string) => {
+const fetchNoteDetails = async (accessToken:string | null,noteId?:string,) => {
   if(!noteId) return null
   const response = await axios.get(`${apiBaseUrl}/notes/${noteId}`,{
-    withCredentials:true
-  }); 
+    headers: {
+      Authorization: `Bearer ${accessToken}`, // 👈 Ajout manuel ici
+    },
+  });
   return response.data;
 }
 
 export default function Note() {
 
 
-  const { mode,setMode} = useUserStore()
+  const { mode,setMode,accessToken} = useUserStore()
  
   const noteId = useParams().noteId
   const navigate = useNavigate()
   const { data: note, isLoading, isError,error } =  useQuery({
     queryKey: ["note",noteId], 
-    queryFn: () =>  fetchNoteDetails(noteId),
+    queryFn: () =>  fetchNoteDetails(accessToken,noteId),
   });
-  
+   const { data: status, isLoading:isRefreshLoading, isError:isRefreshError } = useAuth();
 
   if (isLoading) return <Loader/>;
-  if (isError) {
-    if (axios.isAxiosError(error)) {
-      if (error.response?.status === 401) {
+   
+
+ if (isError) {
+  if (axios.isAxiosError(error)) {
+    // Cas 401 : token expiré → tenter le refresh
+    if (error.response?.status === 401) {
+      if (isRefreshLoading) {
+        // On est en train de tenter un refresh
+        return <Loader />;
+      }
+
+      if (status === "success") {
+        // Refresh OK → on attend que useInfiniteQuery refetch automatiquement
+        return <Loader />;
+      }
+
+      if (status === "unauthorized" || isRefreshError) {
+        // Refresh KO → rediriger vers /auth
         return <Navigate to="/auth" />;
       }
-      if (error.response?.status === 404) {
-        return <NotFound/>;
-      }
+
+      // Autres cas (sécurité)
+      return <Error />;
     }
-    return <Error/>;
   }
+
+  // Autres types d'erreurs
+  return <Error />;
+}
 
 
   
@@ -61,6 +82,7 @@ export default function Note() {
     }
    }
 
+   if(!note) return <NotFound/>
    return (
     <div>
       <button

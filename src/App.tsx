@@ -4,17 +4,16 @@ import Register from "./pages/register";
 import NotesPage from "./pages/notes";
 import LandingPage from "./pages/landing-page";
 import Note from "./pages/note";
-import { AuthProvider } from "./contexts/providers/authprovider";
 import Protected from "./pages/protected";
 import MainLayout from "./layouts/main-layout";
 import AuthLayout from "./layouts/auth-layout";
 import NotFound from "./components/not-found";
 import AddNotePage from "./pages/add-note-page";
+import Settings from "./pages/settings";
 
 function App() {
   return (
       <Router>
-         <AuthProvider>
         <Routes>
           {/**main layout */}
         <Route path="/" element={<MainLayout/>}>
@@ -52,10 +51,17 @@ function App() {
               </Protected>
             }
           />
+          <Route
+            path="/settings"
+            element={
+              <Protected>
+                <Settings />
+              </Protected>
+            }
+          />
            {/**Not found page */}
           <Route path="*" element={<NotFound/>} />
         </Routes>
-        </AuthProvider>
       </Router>
   
   );

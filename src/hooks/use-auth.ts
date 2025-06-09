@@ -1,10 +1,12 @@
-import { AuthContext } from "@/contexts/providers/auth-context"
-import { useContext } from "react"
+// hooks/use-auth.ts
+import { useQuery } from "@tanstack/react-query";
+import { tryRefresh } from "@/lib/auth";
 
 export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider")
-  }
-  return context
-}
+  return useQuery({
+    queryKey: ["auth"],
+    queryFn: tryRefresh,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+};

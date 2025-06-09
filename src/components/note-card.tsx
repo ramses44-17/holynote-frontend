@@ -74,7 +74,7 @@ function YouTubeThumbnail({  youtubeUrl }: { youtubeUrl?: string | null}) {
 export default function NoteCard({  id,topic, preacher, date, content, references ,youtubeUrl,refetch}:NoteProps) {
 
 
-  const {setMode} = useUserStore()
+  const {setMode,accessToken} = useUserStore()
 
   const formattedDate = new Date(date).toLocaleDateString("fr-FR", {
     year: "numeric",
@@ -111,7 +111,7 @@ export default function NoteCard({  id,topic, preacher, date, content, reference
               <span>Edit</span>
             </DropdownMenuItem>
             <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={(e)=>e.preventDefault()}>
-              <ConfimDeleteModal refetch={refetch} id={id}/>
+              <ConfimDeleteModal refetch={refetch} id={id} accessToken={accessToken}/>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

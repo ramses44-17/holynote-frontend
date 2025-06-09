@@ -15,16 +15,17 @@ import axios from "axios"
 import { Trash2 } from "lucide-react"
 import { useState } from "react"
 
-export default function ConfimDeleteModal({id,refetch}:{id:string,refetch:() =>void}) {
+export default function ConfimDeleteModal({id,refetch,accessToken}:{id:string,refetch:() =>void,accessToken:string | null}) {
 
 
   const [isDeleting,setIsDeleting] = useState(false)
-  
 
   const handleDelete = async () => {
     setIsDeleting(true)
     await axios.delete(`${apiBaseUrl}/notes/${id}`,{
-      withCredentials:true
+      headers: {
+      Authorization: `Bearer ${accessToken}`, // 👈 Ajout manuel ici
+    },
     }).then(async() => {
       refetch()
       toast({

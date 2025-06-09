@@ -21,3 +21,15 @@ export type NotesResponse = {
   currentPage: number;
   totalPages: number;
 };
+
+
+export type AuthResponse = {
+  message: string;
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    id: string;
+    username: string;
+    email: string;
+  };
+};

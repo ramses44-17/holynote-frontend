@@ -74,7 +74,7 @@ const queryClient = useQueryClient();
   const [referencesInputValue, setReferencesInputValue] = useState("");
   const [filteredBooks, setFilteredBooks] = useState(bookNames);
 
-  const { setMode } = useUserStore();
+  const { setMode,accessToken } = useUserStore();
 
   const [open, setOpen] = useState(false);
   const [passage, setPassage] = useState("");
@@ -106,7 +106,9 @@ const queryClient = useQueryClient();
         `${apiBaseUrl}/notes/${noteId}`,
         data,
         {
-          withCredentials: true,
+          headers: {
+      Authorization: `Bearer ${accessToken}`, // 👈 Ajout manuel ici
+    },
         }
       );
       return response.data;

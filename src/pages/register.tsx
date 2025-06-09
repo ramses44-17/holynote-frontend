@@ -70,7 +70,7 @@ export default function Register() {
   const registerMutation = useMutation({
     mutationFn: async (data: z.infer<typeof registerSchema>) => {
       const response = await axios.post(
-        `${apiBaseUrl}/users/register`,
+        `${apiBaseUrl}/auth/register`,
         data
       );
       return response.data;

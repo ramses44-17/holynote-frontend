@@ -1,24 +1,16 @@
-import { useAuth } from "@/hooks/use-auth";
+import { useUserStore } from "@/stores/app-store";
 import { Navigate, Outlet } from "react-router"
-import Error from "@/components/error";
-import axios from "axios";
 
 
 
 
 export default function AuthLayout() {
 
- const { isLoading,user ,isError,error} = useAuth();
+ const { user} = useUserStore();
  
-    if(user && !isLoading){
+    if(user){
       return <Navigate to="/notes" />
     }    
-
-  if (isError) {
-    if (!axios.isAxiosError(error)) {
-      return <Error/>;
-    }
-  }
 
   return (
     <div>
