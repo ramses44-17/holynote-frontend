@@ -1,31 +1,23 @@
 import { useState, useEffect } from "react";
 import Header, { MainMode } from "@/components/header";
 import NoteCard from "@/components/note-card";
-import { Link, Navigate } from "react-router";
-import axios from "axios";
+import { Link} from "react-router";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import Error from "@/components/error";
 import Loader from "@/components/loader";
 import NewNoteCard from "@/components/new-note-button";
-import { apiBaseUrl } from "@/lib/utils";
 import { useIntersectionObserver } from "@/hooks/use-intersect-observer";
 import { NotesResponse } from "@/types/types";
-import { useAuth } from "@/hooks/use-auth";
-import { useUserStore } from "@/stores/app-store";
+import api from "@/lib/api";
 
 const fetchNotes = async ({
   pageParam = 1,
   searchTerm,
-  accessToken
 }: {
   pageParam?: number;
   searchTerm: string;
-  accessToken:string | null;
 }) => {
-  const response = await axios.get(`${apiBaseUrl}/notes`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`, // 👈 Ajout manuel ici
-    },
+  const response = await api.get(`/notes`, {
     params: {
       page: pageParam,
       search:searchTerm,
@@ -37,7 +29,7 @@ const fetchNotes = async ({
 export default function NotesPage() {
   const [mainMode, setMainMode] = useState<MainMode>("view");
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const {accessToken} = useUserStore()
+
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearchTerm(searchTerm), 300);
@@ -48,7 +40,6 @@ export default function NotesPage() {
     data,
     isLoading,
     isError,
-    error,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -56,7 +47,7 @@ export default function NotesPage() {
   } = useInfiniteQuery<NotesResponse, Error>({
     queryKey: ["notes", debouncedSearchTerm],
     queryFn: ({ pageParam = 1 }) =>
-      fetchNotes({ pageParam:pageParam as number, searchTerm: debouncedSearchTerm,accessToken }),
+      fetchNotes({ pageParam:pageParam as number, searchTerm: debouncedSearchTerm }),
     getNextPageParam: (lastPage) => {
       if (lastPage.currentPage < lastPage.totalPages) {
         return lastPage.currentPage + 1;
@@ -65,6 +56,7 @@ export default function NotesPage() {
     },
     enabled: mainMode === "search" || mainMode === "view",
     initialPageParam: 1,
+    refetchOnWindowFocus:false
   });
 
   const { sentinelRef, setObserver } = useIntersectionObserver(() => {
@@ -74,35 +66,11 @@ export default function NotesPage() {
     }
   });
 
-   const { data: status, isLoading:isRefreshLoading, isError:isRefreshError } = useAuth();
 
- if (isError) {
-  if (axios.isAxiosError(error)) {
-    // Cas 401 : token expiré → tenter le refresh
-    if (error.response?.status === 401) {
-      if (isRefreshLoading) {
-        // On est en train de tenter un refresh
-        return <Loader />;
-      }
-
-      if (status === "success") {
-        // Refresh OK → on attend que useInfiniteQuery refetch automatiquement
-        return <Loader />;
-      }
-
-      if (status === "unauthorized" || isRefreshError) {
-        // Refresh KO → rediriger vers /auth
-        return <Navigate to="/auth" />;
-      }
-
-      // Autres cas (sécurité)
-      return <Error />;
-    }
+  if (isError) {
+    return <Error />;
   }
 
-  // Autres types d'erreurs
-  return <Error />;
-}
   const notes = data?.pages.flatMap((page) => page.notes) ?? [];
 
   return (

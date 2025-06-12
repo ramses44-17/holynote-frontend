@@ -19,11 +19,11 @@ import { Button } from "@/components/ui/button";
 import { CalendarIcon, Save, X } from "lucide-react";
 import { format } from "date-fns";
 import { YouTubeEmbed } from "./youtube-embeb";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { ToastAction } from "./ui/toast";
-import { useUserStore } from "@/stores/app-store";
+import { useNoteStore } from "@/stores/note-store";
 import { useEffect, useState } from "react";
 import { bookNames } from "@/lib/bible";
 import {
@@ -34,13 +34,12 @@ import {
   CommandList,
 } from "./ui/command";
 import { Badge } from "./ui/badge";
-import { apiBaseUrl } from "@/lib/utils";
 import BibleDialog from "./bible-dialog";
 import { Editor, JSONContent } from "@tiptap/react";
 import noteSchema from "@/schemas/note-schema";
 import RichTextEditorInput from "./rich-text-editor-input";
 import { useQueryClient } from "@tanstack/react-query";
-
+import api from "@/lib/api";
 
 interface EditModeProps {
   date?: string;
@@ -49,9 +48,9 @@ interface EditModeProps {
   youtubeUrl?: string | null;
   references?: string[];
   noteId?: string;
-  contentHTML?:string | null
-  contentJSON?:JSONContent | null
-  contentText?:string | null
+  contentHTML?: string | null;
+  contentJSON?: JSONContent | null;
+  contentText?: string | null;
 }
 
 export default function EditMode({
@@ -65,16 +64,15 @@ export default function EditMode({
   contentJSON,
   contentText,
 }: EditModeProps) {
- 
-// À l'intérieur de votre composant
-const queryClient = useQueryClient();
+  // À l'intérieur de votre composant
+  const queryClient = useQueryClient();
   const [selectedReferences, setSelectedReferences] = useState<string[]>(
     references!
   );
   const [referencesInputValue, setReferencesInputValue] = useState("");
   const [filteredBooks, setFilteredBooks] = useState(bookNames);
 
-  const { setMode,accessToken } = useUserStore();
+  const { setMode } = useNoteStore();
 
   const [open, setOpen] = useState(false);
   const [passage, setPassage] = useState("");
@@ -92,7 +90,7 @@ const queryClient = useQueryClient();
   });
 
   const updateNoteMutation = useMutation({
-    mutationFn: async (data:  {
+    mutationFn: async (data: {
       content?: string | null;
       contentHTML?: string | null;
       contentJSON?: JSONContent | null;
@@ -101,23 +99,18 @@ const queryClient = useQueryClient();
       topic: string;
       preacher: string;
       date: string;
-  }) => {
-      const response = await axios.patch(
-        `${apiBaseUrl}/notes/${noteId}`,
-        data,
-        {
-          headers: {
-      Authorization: `Bearer ${accessToken}`, // 👈 Ajout manuel ici
-    },
-        }
+    }) => {
+      const response = await api.patch(
+        `/notes/${noteId}`,
+        data
       );
       return response.data;
     },
     onSuccess: (updatedNote) => {
       queryClient.setQueryData(["note", noteId], updatedNote); // Mettre à jour le cache
-    queryClient.invalidateQueries({
-      queryKey:["note", noteId]
-    });
+      queryClient.invalidateQueries({
+        queryKey: ["note", noteId],
+      });
       setMode("view");
       toast({
         title: "Note updated successfuly",
@@ -237,30 +230,28 @@ const queryClient = useQueryClient();
     setReferencesInputValue(book + " ");
   };
 
+  const [contentJson, setContentJson] = useState<
+    JSONContent | null | undefined
+  >(contentJSON);
+  const [iContentText, setIcontentText] = useState<string | null | undefined>(
+    contentText
+  );
 
-  const [contentJson, setContentJson] = useState<JSONContent | null | undefined>(contentJSON);
-   const [iContentText, setIcontentText] = useState<string | null | undefined>(contentText);
- 
-   const handleEditorChange = (editor: Editor) => {
+  const handleEditorChange = (editor: Editor) => {
     const editorContentText = editor.getText();
-     const editorContentJson = editor.getJSON();
-     const editorContentHtml = editor.getHTML();
-     setContentJson(editorContentJson);
-     setIcontentText(editorContentText);
-     form.setValue("content", editorContentHtml);
-   };
- 
+    const editorContentJson = editor.getJSON();
+    const editorContentHtml = editor.getHTML();
+    setContentJson(editorContentJson);
+    setIcontentText(editorContentText);
+    form.setValue("content", editorContentHtml);
+  };
 
+  const currentYoutubeUrl = form.watch("youtubeUrl");
 
-   const currentYoutubeUrl = form.watch("youtubeUrl")
-
- 
-
- 
-const handleReferencesClick = (passage: string) => {
-  setOpen(true);
-  setPassage(passage);
-};
+  const handleReferencesClick = (passage: string) => {
+    setOpen(true);
+    setPassage(passage);
+  };
 
   function onSubmit(values: {
     content?: string | null;
@@ -271,8 +262,7 @@ const handleReferencesClick = (passage: string) => {
     topic: string;
     preacher: string;
     date: string;
-}) {
-  
+  }) {
     const finalValues = {
       ...values,
       contentHTML: iContentText?.trim() ? values.content : null,
@@ -281,11 +271,9 @@ const handleReferencesClick = (passage: string) => {
       youtubeUrl: values.youtubeUrl?.trim() || null,
       references: values.references?.trim() || null,
     };
-    updateNoteMutation.mutate(finalValues)
+    updateNoteMutation.mutate(finalValues);
   }
-  
 
-  
   return (
     <>
       <Form {...form}>
@@ -354,7 +342,7 @@ const handleReferencesClick = (passage: string) => {
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input placeholder="Enter preacher's name" {...field}  />
+                  <Input placeholder="Enter preacher's name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -394,9 +382,9 @@ const handleReferencesClick = (passage: string) => {
               <FormItem>
                 <FormControl>
                   <RichTextEditorInput
-                     onUpdate={handleEditorChange}
-                     content={contentHTML}
-                                  />
+                    onUpdate={handleEditorChange}
+                    content={contentHTML}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

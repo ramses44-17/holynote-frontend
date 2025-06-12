@@ -18,14 +18,14 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { Link, Navigate} from "react-router";
+import { Link, Navigate } from "react-router";
 import { Pen, X } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { apiBaseUrl } from "@/lib/utils";
-import {useUserStore} from "@/stores/app-store"
+import { useUserStore } from "@/stores/user-store";
 import { AuthResponse } from "@/types/types";
 
 const loginSchema = z.object({
@@ -40,10 +40,14 @@ const loginSchema = z.object({
 });
 
 export default function Login() {
-
-  const {setUser} = useUserStore()
+  const { setUser } = useUserStore();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const loginMutation = useMutation<AuthResponse, AxiosError, z.infer<typeof loginSchema>>({
+
+  const loginMutation = useMutation<
+    AuthResponse,
+    AxiosError,
+    z.infer<typeof loginSchema>
+  >({
     mutationFn: async (data: z.infer<typeof loginSchema>) => {
       const response = await axios.post<AuthResponse>(
         `${apiBaseUrl}/auth/login`,
@@ -59,7 +63,7 @@ export default function Login() {
         title: "Connected successfuly",
         variant: "success",
       });
-     setUser(data.user, data.accessToken)
+      setUser(data.user);
     },
     onError: (error: AxiosError) => {
       if (error.response?.status === 500) {
@@ -83,7 +87,6 @@ export default function Login() {
     },
   });
 
-
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -101,14 +104,10 @@ export default function Login() {
       });
     }
   }
- 
 
-  if(loginMutation.isSuccess && !loginMutation.isPending){
-    return <Navigate to="/notes" />
+  if (loginMutation.isSuccess && !loginMutation.isPending) {
+    return <Navigate to="/notes" />;
   }
-
-
-
 
   return (
     <div className="flex flex-col justify-center items-center min-h-screen p-4">

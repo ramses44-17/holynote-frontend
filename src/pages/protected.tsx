@@ -1,21 +1,25 @@
+import { useUserStore } from "@/stores/user-store";
 import { ReactNode } from "react";
 import { Navigate } from "react-router";
-import Error from "@/components/error";
-import { useUserStore } from "@/stores/app-store";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuthUser } from "@/hooks/use-auth";
 import Loader from "@/components/loader";
 
 const Protected = ({ children }: { children: ReactNode }) => {
   const { user } = useUserStore();
-  const { data: status, isLoading, isError } = useAuth();
+  const { isLoading, isFetching } = useAuthUser();
 
-  if (user) return children;
+  // Tant que la requête /auth/me est en cours, on attend (ex: cookies présents mais store vide)
+  if (isLoading || isFetching) {
+    return <Loader/>; // ou un spinner stylé
+  }
 
-  if (isLoading) return <Loader/>;
-  if (isError || status === "error") return <Error />;
-  if (status === "unauthorized") return <Navigate to="/auth" />;
+  
 
-  return children;
+  // Si aucun utilisateur → redirection
+  if (!user) return <Navigate to="/auth" />;
+
+  // Utilisateur bien authentifié
+  return <>{children}</>;
 };
 
-export default Protected
+export default Protected;

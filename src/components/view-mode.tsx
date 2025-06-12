@@ -3,7 +3,7 @@ import { enUS } from "date-fns/locale";
 import { Button } from "./ui/button";
 import { Edit, BookOpen, ChevronRight } from "lucide-react";
 import { YouTubeEmbed } from "@/components/youtube-embeb";
-import { useUserStore } from "@/stores/app-store";
+import { useNoteStore } from "@/stores/note-store";
 import { Badge } from "./ui/badge";
 import { useState } from "react";
 import BibleDialog from "./bible-dialog";
@@ -13,7 +13,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import TextStyle from "@tiptap/extension-text-style";
 import { EditorContent, mergeAttributes, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import Heading from "@tiptap/extension-heading"
+import Heading from "@tiptap/extension-heading";
 import Underline from "@tiptap/extension-underline";
 import Highlight from "@tiptap/extension-highlight";
 
@@ -25,8 +25,6 @@ interface ViewModeProps {
   content?: string;
   references?: string[];
 }
-
-
 
 const extensions = [
   StarterKit.configure({
@@ -44,8 +42,8 @@ const extensions = [
         ? node.attrs.level
         : this.options.levels[0];
       const classes: { [index: number]: string } = {
-        1: 'text-2xl',
-        2: 'text-xl',
+        1: "text-2xl",
+        2: "text-xl",
       };
       return [
         `h${level}`,
@@ -70,7 +68,7 @@ export default function ViewMode({
   references,
   preacher,
 }: ViewModeProps) {
-  const { setMode } = useUserStore();
+  const { setMode } = useNoteStore();
   const [open, setOpen] = useState(false);
   const [passage, setPassage] = useState("");
 
@@ -79,18 +77,17 @@ export default function ViewMode({
     setPassage(passage);
   };
 
-
-    const editor = useEditor({
-      extensions,
-      content: content,
-      editable:false,
-      editorProps: {
-        attributes: {
-          class: "prose prose-gray dark:prose-invert max-w-none bg-gray-50 px-2 py-2 border-black w-full",
-        },
-      }, 
-    });
-  
+  const editor = useEditor({
+    extensions,
+    content: content,
+    editable: false,
+    editorProps: {
+      attributes: {
+        class:
+          "prose prose-gray dark:prose-invert max-w-none bg-gray-50 px-2 py-2 border-black w-full",
+      },
+    },
+  });
 
   return (
     <div className="max-w-4xl mx-auto [&_*]:max-w-full [&_pre]:overflow-x-auto [&_code]:break-words">
@@ -130,7 +127,7 @@ export default function ViewMode({
 
       <div className="my-10 w-full">
         {content ? (
-          <EditorContent editor={editor}/>
+          <EditorContent editor={editor} />
         ) : (
           <div className="py-12 text-center bg-gray-50 dark:bg-gray-800/30 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
             <p className="text-gray-500 dark:text-gray-400 italic">
