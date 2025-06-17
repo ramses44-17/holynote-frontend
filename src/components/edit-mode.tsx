@@ -246,7 +246,6 @@ export default function EditMode({
   };
 
   function onSubmit(values: NoteMutation) {
-    console.log(values);
     const finalValues = {
       ...values,
       contentHTML: values.content,
@@ -255,7 +254,6 @@ export default function EditMode({
       youtubeUrl: values.youtubeUrl,
       references: values.references,
     };
-    console.log(finalValues)
     updateNoteMutation.mutate(finalValues);
   }
 
