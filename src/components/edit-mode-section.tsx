@@ -1,54 +1,145 @@
-import { format } from "date-fns";
-import { AxiosError } from "axios";
-import { useMutation } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
-import { ToastAction } from "@/components/ui/toast";
-import { bookNames } from "@/lib/bible";
-import {
-  Command,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import { Badge } from "@/components/ui/badge";
-import { YouTubeEmbed } from "@/components/youtube-embeb";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-
-import { CalendarIcon, Save, X } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
-import BibleDialog from "./bible-dialog";
-import RichTextEditorInput from "@/components/rich-text-editor-input";
-import { Editor, JSONContent } from "@tiptap/react";
-import noteSchema from "@/schemas/note-schema";
 import api from "@/lib/api";
-import { NoteMutation } from "@/types/types";
+import { bookNames } from "@/lib/bible";
+// import { NoteMutation } from "@/types/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Editor, JSONContent } from "@tiptap/react";
+import { useEffect, useState } from "react";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "./ui/form";
+import { Popover,PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Button } from "./ui/button";
+import {  CalendarIcon, Save, X } from "lucide-react";
+import {Badge} from "@/components/ui/badge"
+import {Calendar, } from "@/components/ui/calendar"
+import { format } from "date-fns";
+import noteSchema from "@/schemas/note-schema";
+import { useNoteStore } from "@/stores/note-store";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ToastAction } from "@/components/ui/toast";
+import { AxiosError } from "axios";
+import { Command,CommandInput, CommandList, CommandGroup, CommandItem } from "@/components/ui/command";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import BibleDialog from "./bible-dialog";
+import RichTextEditorInput from "./rich-text-editor-input";
+import { Input } from "./ui/input";
+import { YouTubeEmbed } from "./youtube-embeb";
+// import NoteFormWrapper from "./note-mutation-form-wrapper";
 
-export default function AddNoteForm() {
-  const [selectedReferences, setSelectedReferences] = useState<string[]>([]);
+interface EditModeSectionProps {
+  date?: string;
+  topic?: string;
+  preacher?: string;
+  youtubeUrl?: string | null;
+  references?: string[];
+  noteId?: string;
+  contentHTML?: string | null;
+  contentJSON?: JSONContent | null;
+  contentText?: string | null;
+}
+// export default function EditModeSection({
+//   date,
+//   topic,
+//   youtubeUrl,
+//   contentHTML,
+//   references,
+//   preacher,
+//   noteId,
+//   contentJSON,
+//   contentText,
+// }: EditModeSectionProps) {
+// return <NoteFormWrapper mode="edit" noteId={noteId} initialData={{
+//   date,
+//   topic,
+//   preacher,
+//   youtubeUrl,
+//   references,
+//   contentHTML,
+//   contentJSON,
+//   contentText
+// }}
+
+// />
+// }
+export default function EditModeSection({
+  date,
+  topic,
+  youtubeUrl,
+  contentHTML,
+  references,
+  preacher,
+  noteId,
+  contentJSON,
+  contentText,
+}: EditModeSectionProps) {
+  // À l'intérieur de votre composant
+  const queryClient = useQueryClient();
+  const [selectedReferences, setSelectedReferences] = useState<string[]>(
+    references!
+  );
   const [referencesInputValue, setReferencesInputValue] = useState("");
   const [filteredBooks, setFilteredBooks] = useState(bookNames);
 
+  const { setMode } = useNoteStore();
+
+  const [open, setOpen] = useState(false);
+  const [passage, setPassage] = useState("");
+
   const form = useForm<z.infer<typeof noteSchema>>({
     resolver: zodResolver(noteSchema),
+    defaultValues: {
+      topic: topic || undefined,
+      preacher: preacher || undefined,
+      content: contentHTML || undefined,
+      date: date || undefined,
+      references: references?.join(",") || undefined,
+      youtubeUrl: youtubeUrl || undefined,
+    },
+  });
+
+  const updateNoteMutation = useMutation({
+    mutationFn: async (data: {
+      content?: string | null;
+      contentHTML?: string | null;
+      contentJSON?: JSONContent | null;
+      youtubeUrl?: string | null;
+      references?: string | null;
+      topic: string;
+      preacher: string;
+      date: string;
+    }) => {
+      const response = await api.patch(
+        `/notes/${noteId}`,
+        data
+      );
+      return response.data;
+    },
+    onSuccess: (updatedNote) => {
+      queryClient.setQueryData(["note", noteId], updatedNote); // Mettre à jour le cache
+      queryClient.invalidateQueries({
+        queryKey: ["note", noteId],
+      });
+      setMode("view");
+      toast({
+        title: "Note updated successfuly",
+        variant: "success",
+      });
+    },
+    onError: (error: AxiosError, variables) => {
+      toast({
+        title: "Error while updating note, please retry",
+        variant: "error",
+        action: (
+          <ToastAction
+            altText="Try again"
+            onClick={() => updateNoteMutation.mutate(variables!)}
+          >
+            Try again
+          </ToastAction>
+        ),
+      });
+      console.log("Error updating note", error);
+    },
   });
 
   useEffect(() => {
@@ -147,76 +238,49 @@ export default function AddNoteForm() {
     setReferencesInputValue(book + " ");
   };
 
-  const navigate = useNavigate();
+  const [contentJson, setContentJson] = useState<
+    JSONContent | null | undefined
+  >(contentJSON);
+  const [iContentText, setIcontentText] = useState<string | null | undefined>(
+    contentText
+  );
 
-  const addNoteMutation = useMutation({
-    mutationFn: async (data: NoteMutation) => {
-      const response = await api.post(`/notes`, data);
-      return response.data;
-    },
-    onSuccess: (data) => {
-      navigate(`/notes/${data.id}`);
-      toast({
-        title: "Note created successfuly",
-        variant: "success",
-      });
-    },
-    onError: (error: AxiosError, variables) => {
-      toast({
-        title: "Error while initializing note",
-        variant: "error",
-        action: (
-          <ToastAction
-            altText="Try again"
-            onClick={() => addNoteMutation.mutate(variables!)}
-          >
-            Try again
-          </ToastAction>
-        ),
-      });
-      console.log("Error updating note", error);
-    },
-  });
+  const handleEditorChange = (editor: Editor) => {
+    
+    const editorContentText = editor.getText();
+    const editorContentJson = editor.getJSON();
+    const editorContentHtml = editor.getHTML();
+    setContentJson(editorContentJson);
+    setIcontentText(editorContentText);
+    form.setValue("content", editorContentHtml);
+  };
 
-  const [open, setOpen] = useState(false);
-  const [passage, setPassage] = useState("");
+  const currentYoutubeUrl = form.watch("youtubeUrl");
 
   const handleReferencesClick = (passage: string) => {
     setOpen(true);
     setPassage(passage);
   };
 
-  const [contentHtml, setContentHtml] = useState<string | null>(null);
-  const [contentJSON, setContentJson] = useState<JSONContent | null>(null);
-
-  const handleEditorChange = (editor: Editor) => {
-    const contentJSON = editor.getJSON();
-    const contentHtml = editor.getHTML();
-    setContentHtml(contentHtml);
-    const contentText = editor.getText();
-    setContentJson(contentJSON);
-    form.setValue("content", contentText);
-  };
-
-  const youtubeUrl = form.watch("youtubeUrl");
-  const content = form.watch("content");
-
-  function onSubmit(values:NoteMutation) {
-    const contentText = values.content?.trim();
-    const finalContent = contentText ? contentText : null;
-    const finalContentHtml = contentText ? contentHtml : null;
-    const finalContentJson = contentText ? contentJSON : null;
-
+  function onSubmit(values: {
+        content?: string | null;
+        contentHTML?: string | null;
+        contentJSON?: JSONContent | null;
+        youtubeUrl?: string | null;
+        references?: string | null;
+        topic: string;
+        preacher: string;
+        date: string;
+      }) {
     const finalValues = {
       ...values,
-      content: finalContent,
-      contentHTML: finalContentHtml,
-      contentJSON: finalContentJson,
+      contentHTML: iContentText?.trim() ? values.content : null,
+      content: iContentText?.trim() ? iContentText : null,
+      contentJSON: iContentText?.trim() ? contentJson : null,
       youtubeUrl: values.youtubeUrl?.trim() || null,
       references: values.references?.trim() || null,
     };
-
-    addNoteMutation.mutate(finalValues);
+    updateNoteMutation.mutate(finalValues);
   }
 
   return (
@@ -296,9 +360,9 @@ export default function AddNoteForm() {
 
           {/* YouTube Video Preview */}
           <div className="mb-4">
-            {youtubeUrl && (
+            {currentYoutubeUrl && (
               <div className="flex">
-                <YouTubeEmbed youtubeUrl={youtubeUrl} />
+                <YouTubeEmbed youtubeUrl={currentYoutubeUrl} />
               </div>
             )}
 
@@ -328,7 +392,7 @@ export default function AddNoteForm() {
                 <FormControl>
                   <RichTextEditorInput
                     onUpdate={handleEditorChange}
-                    content={content}
+                    content={contentHTML}
                   />
                 </FormControl>
                 <FormMessage />
@@ -414,13 +478,12 @@ export default function AddNoteForm() {
           />
 
           {/* Bouton de soumission */}
-          <Button type="submit" disabled={addNoteMutation.isPending}>
+          <Button type="submit" disabled={updateNoteMutation.isPending}>
             <Save className="h-4 w-4 mr-2" />
-            {addNoteMutation.isPending ? "saving..." : "save"}
+            {updateNoteMutation.isPending ? "saving..." : "save"}
           </Button>
         </form>
       </Form>
-
       <BibleDialog open={open} passage={passage} setOpen={setOpen} />
     </>
   );

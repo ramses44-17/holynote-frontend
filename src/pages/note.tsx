@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import ViewMode from "@/components/view-mode";
-import EditMode from "@/components/edit-mode-form";
+import EditMode from "@/components/edit-mode";
 import Error from "@/components/error";
 import NotFound from "@/components/not-found";
 import Loader from "@/components/loader";

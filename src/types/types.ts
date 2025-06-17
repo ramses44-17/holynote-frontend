@@ -25,11 +25,20 @@ export type NotesResponse = {
 
 export type AuthResponse = {
   message: string;
-  accessToken: string;
-  refreshToken: string;
   user: {
     id: string;
     username: string;
     email: string;
   };
 };
+
+export type NoteMutation = {
+    content?: string | null;
+    contentHTML?: string | null;
+    contentJSON?: JSONContent | null;
+    youtubeUrl?: string | null;
+    references?: string | null;
+    topic: string;
+    preacher: string;
+    date: string;
+  }

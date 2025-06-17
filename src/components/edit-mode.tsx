@@ -40,6 +40,7 @@ import noteSchema from "@/schemas/note-schema";
 import RichTextEditorInput from "./rich-text-editor-input";
 import { useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { NoteMutation } from "@/types/types";
 
 interface EditModeProps {
   date?: string;
@@ -90,16 +91,7 @@ export default function EditMode({
   });
 
   const updateNoteMutation = useMutation({
-    mutationFn: async (data: {
-      content?: string | null;
-      contentHTML?: string | null;
-      contentJSON?: JSONContent | null;
-      youtubeUrl?: string | null;
-      references?: string | null;
-      topic: string;
-      preacher: string;
-      date: string;
-    }) => {
+    mutationFn: async (data: NoteMutation) => {
       const response = await api.patch(
         `/notes/${noteId}`,
         data
@@ -253,26 +245,21 @@ export default function EditMode({
     setPassage(passage);
   };
 
-  function onSubmit(values: {
-    content?: string | null;
-    contentHTML?: string | null;
-    contentJSON?: JSONContent | null;
-    youtubeUrl?: string | null;
-    references?: string | null;
-    topic: string;
-    preacher: string;
-    date: string;
-  }) {
+  function onSubmit(values: NoteMutation) {
+    console.log(values);
     const finalValues = {
       ...values,
-      contentHTML: iContentText?.trim() ? values.content : null,
-      content: iContentText?.trim() ? iContentText : null,
-      contentJSON: iContentText?.trim() ? contentJson : null,
-      youtubeUrl: values.youtubeUrl?.trim() || null,
-      references: values.references?.trim() || null,
+      contentHTML: values.content,
+      content: iContentText,
+      contentJSON: contentJson,
+      youtubeUrl: values.youtubeUrl,
+      references: values.references,
     };
+    console.log(finalValues)
     updateNoteMutation.mutate(finalValues);
   }
+
+  
 
   return (
     <>

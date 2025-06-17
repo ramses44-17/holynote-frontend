@@ -13,16 +13,15 @@ const noteSchema = z.object({
   content: z.string().optional(),
   references: z
     .string()
-    .regex(BiblicreferencesRegex, {
-      message: "Invalid references format",
-    })
-    .or(z.string().max(0, "References cannot be empty"))
-    .optional(),
+    .optional().refine((val) => !val || BiblicreferencesRegex.test(val), {
+    message: "Invalid references format",
+  }),
   youtubeUrl: z
     .string()
-    .url("invalid youtube url")
-    .regex(youtubeUrlRegex, "invalid youtube url")
-    .optional(),
+    .optional()
+    .refine((val) => !val || youtubeUrlRegex.test(val), {
+    message: "Invalid Youtube url format",
+  }),
   preacher: z
     .string({
       message: "preacher name is required",
