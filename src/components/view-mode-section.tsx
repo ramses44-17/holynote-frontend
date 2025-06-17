@@ -60,7 +60,7 @@ const extensions = [
   Highlight.configure({ multicolor: true }),
   Color,
 ];
-export default function ViewMode({
+export default function ViewModeSection({
   date,
   topic,
   youtubeUrl,

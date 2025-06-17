@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
@@ -35,14 +35,12 @@ import { Input } from "@/components/ui/input";
 import { CalendarIcon, Save, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import {
-  apiBaseUrl
-} from "@/lib/utils";
 import BibleDialog from "./bible-dialog";
 import RichTextEditorInput from "@/components/rich-text-editor-input";
 import { Editor, JSONContent } from "@tiptap/react";
 import noteSchema from "@/schemas/note-schema";
-
+import api from "@/lib/api";
+import { NoteMutation } from "@/types/types";
 
 export default function AddNoteForm() {
   const [selectedReferences, setSelectedReferences] = useState<string[]>([]);
@@ -150,20 +148,10 @@ export default function AddNoteForm() {
   };
 
   const navigate = useNavigate();
+
   const addNoteMutation = useMutation({
-    mutationFn: async (data: {
-      content?: string | null;
-      contentHTML?: string | null;
-      contentJSON?: JSONContent | null;
-      youtubeUrl?: string | null;
-      references?: string | null;
-      topic: string;
-      preacher: string;
-      date: string;
-  }) => {
-      const response = await axios.post(`${apiBaseUrl}/notes`, data, {
-        withCredentials: true,
-      });
+    mutationFn: async (data: NoteMutation) => {
+      const response = await api.post(`/notes`, data);
       return response.data;
     },
     onSuccess: (data) => {
@@ -190,8 +178,6 @@ export default function AddNoteForm() {
     },
   });
 
-  
-
   const [open, setOpen] = useState(false);
   const [passage, setPassage] = useState("");
 
@@ -212,29 +198,15 @@ export default function AddNoteForm() {
     form.setValue("content", contentText);
   };
 
-  
-
   const youtubeUrl = form.watch("youtubeUrl");
-  const content = form.watch("content")
+  const content = form.watch("content");
 
-
-
-
-  function onSubmit(values:  {
-    content?: string | null;
-    contentHTML?: string | null;
-    contentJSON?: JSONContent | null;
-    youtubeUrl?: string | null;
-    references?: string | null;
-    topic: string;
-    preacher: string;
-    date: string;
-}) {
+  function onSubmit(values:NoteMutation) {
     const contentText = values.content?.trim();
     const finalContent = contentText ? contentText : null;
     const finalContentHtml = contentText ? contentHtml : null;
     const finalContentJson = contentText ? contentJSON : null;
-  
+
     const finalValues = {
       ...values,
       content: finalContent,
@@ -243,212 +215,211 @@ export default function AddNoteForm() {
       youtubeUrl: values.youtubeUrl?.trim() || null,
       references: values.references?.trim() || null,
     };
-  
+
     addNoteMutation.mutate(finalValues);
   }
-  
-  return ( 
-    <>
-   <Form {...form}>
-           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-             <FormField
-               control={form.control}
-               name="date"
-               render={({ field }) => (
-                 <FormItem className="flex flex-col w-full">
-                   <Popover>
-                     <PopoverTrigger asChild>
-                       <FormControl>
-                         <Button
-                           variant="outline"
-                           className={`w-[240px] justify-start text-left font-normal ${
-                             !field.value && "text-muted-foreground"
-                           }`}
-                         >
-                           <CalendarIcon className="mr-2 h-4 w-4" />
-                           {field.value ? (
-                             format(new Date(field.value), "PPP")
-                           ) : (
-                             <span>Choose a date</span>
-                           )}
-                         </Button>
-                       </FormControl>
-                     </PopoverTrigger>
-                     <PopoverContent className="w-auto p-0" align="start">
-                       <Calendar
-                         mode="single"
-                         selected={field.value ? new Date(field.value) : undefined}
-                         onSelect={(date) =>
-                           field.onChange(date ? format(date, "yyyy-MM-dd") : "")
-                         }
-                         initialFocus
-                       />
-                     </PopoverContent>
-                   </Popover>
-                   <FormMessage />
-                 </FormItem>
-               )}
-             />
-   
-             {/* Champ : Sujet */}
-             <FormField
-               control={form.control}
-               name="topic"
-               render={({ field }) => (
-                 <FormItem>
-                   <FormControl>
-                     <Input
-                       placeholder="Enter topic"
-                       {...field}
-                       className="md:text-3xl lg:text-4xl  text-2xl font-bold text-balance"
-                     />
-                   </FormControl>
-                   <FormMessage />
-                 </FormItem>
-               )}
-             />
-   
-             {/* Champ : Nom du prédicateur */}
-             <FormField
-               control={form.control}
-               name="preacher"
-               render={({ field }) => (
-                 <FormItem>
-                   <FormControl>
-                     <Input placeholder="Enter preacher's name" {...field}  />
-                   </FormControl>
-                   <FormMessage />
-                 </FormItem>
-               )}
-             />
-   
-             {/* YouTube Video Preview */}
-             <div className="mb-4">
-               {youtubeUrl && (
-                 <div className="flex">
-                   <YouTubeEmbed youtubeUrl={youtubeUrl} />
-                 </div>
-               )}
-   
-               <FormField
-                 control={form.control}
-                 name="youtubeUrl"
-                 render={({ field }) => (
-                   <FormItem className="relative">
-                     <FormControl>
-                       <Input
-                         placeholder="Enter YouTube URL (e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ)"
-                         {...field}
-                       />
-                     </FormControl>
-                     <FormMessage />
-                   </FormItem>
-                 )}
-               />
-             </div>
-   
-             {/* Champ : Contenu */}
-             <FormField
-               control={form.control}
-               name="content"
-               render={() => (
-                 <FormItem>
-                   <FormControl>
-                     <RichTextEditorInput
-                        onUpdate={handleEditorChange}
-                        content={content}
-                                     />
-                   </FormControl>
-                   <FormMessage />
-                 </FormItem>
-               )}
-             />
-   
-             {/* Champ : Références */}
-             <FormField
-               control={form.control}
-               name="references"
-               render={() => (
-                 <FormItem>
-                   <FormControl>
-                     <div className="space-y-2">
-                       <div className="flex flex-wrap gap-2 mt-2">
-                         {selectedReferences.map((reference, index) => (
-                           <Badge
-                             key={index}
-                             variant="secondary"
-                             className="px-3 py-1 cursor-pointer underline"
-                             onClick={() => handleReferencesClick(reference)}
-                           >
-                             {reference}
-                             <Button
-                               type="button"
-                               variant="ghost"
-                               size="sm"
-                               className="h-4 w-4 p-0 ml-1"
-                               onClick={(e) => {
-                                 e.stopPropagation();
-                                 removeReference(reference);
-                               }}
-                             >
-                               <X className="h-3 w-3" />
-                               <span className="sr-only">Supprimer</span>
-                             </Button>
-                           </Badge>
-                         ))}
-                       </div>
-                       <div className="flex">
-                         <Command className="rounded-lg border shadow-sm w-full">
-                           <CommandInput
-                             placeholder="Entrez des références (ex: Jean 3:16, Luc 1:13)"
-                             value={referencesInputValue}
-                             onValueChange={setReferencesInputValue}
-                             onKeyDown={(e) => {
-                               if (e.key === "Enter") {
-                                 e.preventDefault();
-                                 addReference();
-                               }
-                             }}
-                           />
-                           <CommandList className="max-h-40">
-                             <CommandGroup heading="Suggestions">
-                               {filteredBooks.slice(0, 5).map((book, index) => (
-                                 <CommandItem
-                                   key={index}
-                                   onSelect={() => addBookToInput(book)}
-                                   className="cursor-pointer"
-                                 >
-                                   {book}
-                                 </CommandItem>
-                               ))}
-                             </CommandGroup>
-                           </CommandList>
-                         </Command>
-                         <Button
-                           type="button"
-                           onClick={addReference}
-                           className="ml-2"
-                         >
-                           Ajouter
-                         </Button>
-                       </div>
-   
-                       {/* Affichage des références sélectionnées */}
-                     </div>
-                   </FormControl>
-                   <FormMessage />
-                 </FormItem>
-               )}
-             />
-   
-             {/* Bouton de soumission */}
-             <Button type="submit" disabled={addNoteMutation.isPending}>
-               <Save className="h-4 w-4 mr-2" />
-               {addNoteMutation.isPending ? "saving..." : "save"}
-             </Button>
-           </form>
-         </Form>
 
+  return (
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="date"
+            render={({ field }) => (
+              <FormItem className="flex flex-col w-full">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        className={`w-[240px] justify-start text-left font-normal ${
+                          !field.value && "text-muted-foreground"
+                        }`}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {field.value ? (
+                          format(new Date(field.value), "PPP")
+                        ) : (
+                          <span>Choose a date</span>
+                        )}
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value ? new Date(field.value) : undefined}
+                      onSelect={(date) =>
+                        field.onChange(date ? format(date, "yyyy-MM-dd") : "")
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Champ : Sujet */}
+          <FormField
+            control={form.control}
+            name="topic"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    placeholder="Enter topic"
+                    {...field}
+                    className="md:text-3xl lg:text-4xl  text-2xl font-bold text-balance"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Champ : Nom du prédicateur */}
+          <FormField
+            control={form.control}
+            name="preacher"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input placeholder="Enter preacher's name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* YouTube Video Preview */}
+          <div className="mb-4">
+            {youtubeUrl && (
+              <div className="flex">
+                <YouTubeEmbed youtubeUrl={youtubeUrl} />
+              </div>
+            )}
+
+            <FormField
+              control={form.control}
+              name="youtubeUrl"
+              render={({ field }) => (
+                <FormItem className="relative">
+                  <FormControl>
+                    <Input
+                      placeholder="Enter YouTube URL (e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ)"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Champ : Contenu */}
+          <FormField
+            control={form.control}
+            name="content"
+            render={() => (
+              <FormItem>
+                <FormControl>
+                  <RichTextEditorInput
+                    onUpdate={handleEditorChange}
+                    content={content}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Champ : Références */}
+          <FormField
+            control={form.control}
+            name="references"
+            render={() => (
+              <FormItem>
+                <FormControl>
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {selectedReferences.map((reference, index) => (
+                        <Badge
+                          key={index}
+                          variant="secondary"
+                          className="px-3 py-1 cursor-pointer underline"
+                          onClick={() => handleReferencesClick(reference)}
+                        >
+                          {reference}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-4 w-4 p-0 ml-1"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeReference(reference);
+                            }}
+                          >
+                            <X className="h-3 w-3" />
+                            <span className="sr-only">Supprimer</span>
+                          </Button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex">
+                      <Command className="rounded-lg border shadow-sm w-full">
+                        <CommandInput
+                          placeholder="Entrez des références (ex: Jean 3:16, Luc 1:13)"
+                          value={referencesInputValue}
+                          onValueChange={setReferencesInputValue}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              addReference();
+                            }
+                          }}
+                        />
+                        <CommandList className="max-h-40">
+                          <CommandGroup heading="Suggestions">
+                            {filteredBooks.slice(0, 5).map((book, index) => (
+                              <CommandItem
+                                key={index}
+                                onSelect={() => addBookToInput(book)}
+                                className="cursor-pointer"
+                              >
+                                {book}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                      <Button
+                        type="button"
+                        onClick={addReference}
+                        className="ml-2"
+                      >
+                        Ajouter
+                      </Button>
+                    </div>
+
+                    {/* Affichage des références sélectionnées */}
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Bouton de soumission */}
+          <Button type="submit" disabled={addNoteMutation.isPending}>
+            <Save className="h-4 w-4 mr-2" />
+            {addNoteMutation.isPending ? "saving..." : "save"}
+          </Button>
+        </form>
+      </Form>
 
       <BibleDialog open={open} passage={passage} setOpen={setOpen} />
     </>

@@ -10,8 +10,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { toast } from "@/hooks/use-toast"
-import { apiBaseUrl } from "@/lib/utils"
-import axios from "axios"
+import api from "@/lib/api"
 import { Trash2 } from "lucide-react"
 import { useState } from "react"
 
@@ -19,13 +18,10 @@ export default function ConfimDeleteModal({id,refetch}:{id:string,refetch:() =>v
 
 
   const [isDeleting,setIsDeleting] = useState(false)
-  
 
   const handleDelete = async () => {
     setIsDeleting(true)
-    await axios.delete(`${apiBaseUrl}/notes/${id}`,{
-      withCredentials:true
-    }).then(async() => {
+    await api.delete(`/notes/${id}`).then(async() => {
       refetch()
       toast({
         description:"Note deleted successfuly",

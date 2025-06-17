@@ -1,15 +1,14 @@
 import { useState, useEffect } from "react";
 import Header, { MainMode } from "@/components/header";
 import NoteCard from "@/components/note-card";
-import { Link, Navigate } from "react-router";
-import axios from "axios";
+import { Link} from "react-router";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import Error from "@/components/error";
 import Loader from "@/components/loader";
 import NewNoteCard from "@/components/new-note-button";
-import { apiBaseUrl } from "@/lib/utils";
 import { useIntersectionObserver } from "@/hooks/use-intersect-observer";
 import { NotesResponse } from "@/types/types";
+import api from "@/lib/api";
 
 const fetchNotes = async ({
   pageParam = 1,
@@ -18,8 +17,7 @@ const fetchNotes = async ({
   pageParam?: number;
   searchTerm: string;
 }) => {
-  const response = await axios.get(`${apiBaseUrl}/notes`, {
-    withCredentials: true,
+  const response = await api.get(`/notes`, {
     params: {
       page: pageParam,
       search:searchTerm,
@@ -42,7 +40,6 @@ export default function NotesPage() {
     data,
     isLoading,
     isError,
-    error,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -59,6 +56,7 @@ export default function NotesPage() {
     },
     enabled: mainMode === "search" || mainMode === "view",
     initialPageParam: 1,
+    refetchOnWindowFocus:false
   });
 
   const { sentinelRef, setObserver } = useIntersectionObserver(() => {
@@ -70,11 +68,6 @@ export default function NotesPage() {
 
 
   if (isError) {
-    if (axios.isAxiosError(error)) {
-      if (error.response?.status === 401) {
-        return <Navigate to="/auth" />;
-      }
-    }
     return <Error />;
   }
 

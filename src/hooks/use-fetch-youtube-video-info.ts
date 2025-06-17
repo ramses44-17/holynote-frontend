@@ -31,7 +31,8 @@ const useFetchVideo = (videoUrl?:string | null) => {
     queryKey: ["video", videoUrl], // Cache les données sous cette clé
     queryFn: () => fetchVideoInfo(videoUrl!),
     enabled: !!videoUrl, // Ne lance pas la requête si videoId est vide
-    staleTime: 1000 * 60 * 5, // Cache les résultats pendant 5 minutes
+    staleTime: 1000 * 60 * 5, 
+    refetchOnWindowFocus:false// Cache les résultats pendant 5 minutes
   });
 };
 
